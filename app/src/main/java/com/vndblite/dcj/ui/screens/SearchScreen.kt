@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import com.vndblite.dcj.data.model.*
 import com.vndblite.dcj.ui.components.AssetImage
 import com.vndblite.dcj.ui.components.BbCodeText
+import com.vndblite.dcj.ui.components.NsfwAsyncImage
 import com.vndblite.dcj.ui.components.VnItemGridCard
 import com.vndblite.dcj.ui.theme.LocalAppThemeCode
 import com.vndblite.dcj.ui.theme.vndbFilterChipBorder
@@ -1285,7 +1286,8 @@ fun CharacterResultCard(
 ) {
     val theme = LocalAppThemeCode.current
     val isExplicit = character.image?.isExplicit == true
-    val shouldBlur = isExplicit && showCoverCensor
+    var revealPortrait by remember(character.id) { mutableStateOf(false) }
+    val shouldBlur = isExplicit && showCoverCensor && !revealPortrait
 
     Surface(
         color = theme.primary.copy(alpha = 0.86f),
@@ -1312,14 +1314,31 @@ fun CharacterResultCard(
             ) {
                 val imgUrl = character.image?.displayUrl.orEmpty()
                 if (imgUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = imgUrl,
+                    NsfwAsyncImage(
+                        imageUrl = imgUrl,
                         contentDescription = character.name,
+                        shouldBlur = shouldBlur,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(if (shouldBlur) Modifier.blur(16.dp) else Modifier)
+                        modifier = Modifier.fillMaxSize()
                     )
+                    if (isExplicit && showCoverCensor) {
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.72f),
+                            shape = RoundedCornerShape(6.dp),
+                            onClick = { revealPortrait = !revealPortrait },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                text = if (shouldBlur) "18+" else "Hide",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                 } else {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -1458,18 +1477,17 @@ fun CharacterDetailDialog(
             ) {
                 val imgUrl = character.image?.displayUrl.orEmpty()
                 if (imgUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = imgUrl,
+                    val isCharExplicit = character.image?.isExplicit == true && showCoverCensor
+                    var revealModalImg by remember(character.id) { mutableStateOf(false) }
+                    NsfwAsyncImage(
+                        imageUrl = imgUrl,
                         contentDescription = character.name,
+                        shouldBlur = isCharExplicit && !revealModalImg,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(64.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .then(
-                                if (character.image?.isExplicit == true && showCoverCensor) {
-                                    Modifier.blur(14.dp)
-                                } else Modifier
-                            )
+                            .clickable(enabled = isCharExplicit) { revealModalImg = !revealModalImg }
                     )
                 }
                 Column {

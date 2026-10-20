@@ -80,7 +80,7 @@ fun OthersScreen(
                     Spacer(modifier = Modifier.width(14.dp))
                     Column {
                         Text(
-                            text = "VNDB Lite",
+                            text = "VNDB Kotlin",
                             style = MaterialTheme.typography.titleLarge,
                             color = theme.secondary,
                             fontWeight = FontWeight.Bold
@@ -141,7 +141,7 @@ fun OthersScreen(
         item {
             OthersMenuTile(
                 icon = Icons.Default.Info,
-                title = "About VNDB Lite",
+                title = "About VNDB Kotlin",
                 subtitle = "Version info, credits, source code & license",
                 onClick = onOpenAbout,
                 testTag = "others_about_tile"
@@ -152,11 +152,11 @@ fun OthersScreen(
             OthersMenuTile(
                 icon = Icons.Default.BugReport,
                 title = "Report a Bug / Feedback",
-                subtitle = "Open issue tracker on GitHub",
+                subtitle = "Open issue tracker on GitHub (HeyTahsin16/VNDB-Kotlin)",
                 onClick = {
                     runCatching {
                         context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Daniel-C-J/vndb-lite/issues"))
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin/issues"))
                         )
                     }
                 },
@@ -368,13 +368,13 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Blur Explicit (18+) Covers & Screenshots",
+                                    text = "Blur NSFW & Explicit Content",
                                     style = MaterialTheme.typography.titleMedium,
                                     color = theme.tertiary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Automatically blur images flagged for sexual or violent content",
+                                    text = "Automatically blur covers, screenshots, and character images flagged as NSFW (enabled by default)",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = theme.tertiary.copy(alpha = 0.75f)
                                 )
@@ -986,7 +986,7 @@ fun AboutScreen(onBack: () -> Unit) {
         containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("About VNDB Lite", color = theme.tertiary, fontWeight = FontWeight.Bold) },
+                title = { Text("About VNDB Kotlin", color = theme.tertiary, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("about_back_button")) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = theme.tertiary)
@@ -1022,25 +1022,25 @@ fun AboutScreen(onBack: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "VNDB Lite",
+                        text = "VNDB Kotlin",
                         style = MaterialTheme.typography.headlineMedium,
                         color = theme.secondary,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Version 2.1.0 • Kotlin & Jetpack Compose Edition",
+                        text = "Native Android Edition • Kotlin & Jetpack Compose",
                         style = MaterialTheme.typography.bodyMedium,
                         color = theme.tertiary.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "A fast, free, and open-source mobile client for The Visual Novel Database (vndb.org), featuring Character Traits search, local offline caching, 11 classic visual novel themes, and two-way cloud synchronization.",
+                        text = "A fast, free, and open-source native Android client for The Visual Novel Database (vndb.org), featuring Character & Traits search, Community Reviews, Memorable Quotes, local offline caching, 11 classic visual novel themes, and two-way cloud synchronization.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = theme.tertiary
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Author: Daniel C.J • License: GPL-3.0",
+                        text = "Repository: HeyTahsin16/VNDB-Kotlin • License: GPL-3.0",
                         style = MaterialTheme.typography.labelMedium,
                         color = theme.secondary
                     )
@@ -1066,7 +1066,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     OutlinedButton(
                         onClick = {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Daniel-C-J/vndb-lite")))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin")))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -1077,24 +1077,20 @@ fun AboutScreen(onBack: () -> Unit) {
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("GitHub Repository", color = theme.tertiary)
+                        Text("GitHub Repository (HeyTahsin16/VNDB-Kotlin)", color = theme.tertiary)
                     }
 
                     OutlinedButton(
                         onClick = {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://codeberg.org/Daniel-C-J/vndb-lite")))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin/issues")))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AssetImage(
-                            assetPath = "assets/images/contact/codeberg.png",
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(Icons.Default.BugReport, contentDescription = null, tint = theme.secondary, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Codeberg Mirror", color = theme.tertiary)
+                        Text("Issue Tracker & Feedback", color = theme.tertiary)
                     }
 
                     OutlinedButton(

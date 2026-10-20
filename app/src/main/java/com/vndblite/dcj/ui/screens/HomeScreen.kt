@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.vndblite.dcj.data.model.*
 import com.vndblite.dcj.ui.components.AssetImage
+import com.vndblite.dcj.ui.components.NsfwAsyncImage
 import com.vndblite.dcj.ui.components.VnItemGridCard
 import com.vndblite.dcj.ui.theme.LocalAppThemeCode
 import com.vndblite.dcj.ui.viewmodel.HomeUiState
@@ -38,11 +39,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 import androidx.compose.material.icons.filled.FormatQuote
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
-import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
@@ -83,7 +82,7 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             AssetImage(
                                 assetPath = "assets/images/icon/app_icon.png",
-                                contentDescription = "VNDB Lite Icon",
+                                contentDescription = "VNDB Kotlin Icon",
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp))
@@ -91,7 +90,7 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Welcome to VNDB Lite!",
+                                    text = "Welcome to VNDB Kotlin!",
                                     style = MaterialTheme.typography.titleLarge,
                                     color = theme.secondary,
                                     fontWeight = FontWeight.Bold
@@ -501,14 +500,15 @@ fun VndbQuotesSection(
                                             val imgUrl = q.vn.image?.displayUrl.orEmpty()
                                             val shouldBlur = (q.vn.image?.isExplicit == true) && showCoverCensor
                                             if (imgUrl.isNotBlank()) {
-                                                AsyncImage(
-                                                    model = imgUrl,
+                                                NsfwAsyncImage(
+                                                    imageUrl = imgUrl,
                                                     contentDescription = q.vn.title,
+                                                    shouldBlur = shouldBlur,
                                                     contentScale = ContentScale.Crop,
+                                                    blurRadius = 16.dp,
                                                     modifier = Modifier
                                                         .size(width = 34.dp, height = 46.dp)
                                                         .clip(RoundedCornerShape(6.dp))
-                                                        .then(if (shouldBlur) Modifier.blur(10.dp) else Modifier)
                                                 )
                                                 Spacer(modifier = Modifier.width(10.dp))
                                             }

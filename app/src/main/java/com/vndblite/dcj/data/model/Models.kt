@@ -130,7 +130,7 @@ data class VnImage(
     val violence: Double = 0.0
 ) {
     val isExplicit: Boolean
-        get() = sexual >= 1.0 || violence >= 1.0
+        get() = sexual >= 0.25 || violence >= 0.5
 
     val displayUrl: String
         get() = thumbnail.ifEmpty { url }

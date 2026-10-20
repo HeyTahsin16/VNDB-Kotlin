@@ -77,13 +77,12 @@ fun VnItemGridCard(
         Box(modifier = Modifier.fillMaxSize()) {
             val imageUrl = vn.image?.displayUrl.orEmpty()
             if (imageUrl.isNotBlank()) {
-                AsyncImage(
-                    model = imageUrl,
+                NsfwAsyncImage(
+                    imageUrl = imageUrl,
                     contentDescription = vn.title,
+                    shouldBlur = shouldBlur,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (shouldBlur) Modifier.blur(20.dp) else Modifier)
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
                 Box(
@@ -104,7 +103,7 @@ fun VnItemGridCard(
             // Explicit censor badge (tap to toggle reveal)
             if (isExplicit && showCoverCensorGlobal) {
                 Surface(
-                    color = Color.Black.copy(alpha = 0.65f),
+                    color = Color.Black.copy(alpha = 0.72f),
                     shape = RoundedCornerShape(8.dp),
                     onClick = { censorOverrideRevealed = !censorOverrideRevealed },
                     modifier = Modifier
@@ -117,14 +116,15 @@ fun VnItemGridCard(
                     ) {
                         Icon(
                             imageVector = if (shouldBlur) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = "Toggle Explicit Cover",
+                            contentDescription = "Toggle NSFW Cover",
                             tint = Color(0xFFFF8A80),
                             modifier = Modifier.size(13.dp)
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = if (shouldBlur) "18+" else "Hide",
+                            text = if (shouldBlur) "NSFW 18+" else "Hide",
                             style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }

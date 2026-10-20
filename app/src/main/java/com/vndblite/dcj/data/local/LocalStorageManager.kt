@@ -9,7 +9,7 @@ import org.json.JSONObject
 class LocalStorageManager(context: Context) {
 
     companion object {
-        private const val PREFS_NAME = "FlutterSharedPreferences"
+        private const val PREFS_NAME = "VndbKotlinPreferences"
         const val P1 = "P01_"
         const val P2 = "P02_"
         const val P3 = "P03_"
@@ -25,7 +25,7 @@ class LocalStorageManager(context: Context) {
         const val VNDB_STATS = "VNDB_STATS"
         const val AUTO_UPDATE_CHECK_CONF = "AUTO_UPDATE_CHECK_CONF"
         const val THEME_CONF = "THEME_CONF"
-        const val COVER_CENSOR_CONF = "COVER_CENSOR_CONF"
+        const val COVER_CENSOR_CONF = "NSFW_COVER_CENSOR_DEFAULT_ON"
         const val SHOW_CHART_CONF = "SHOW_CHART_CONF"
         const val CUSTOM_FONT_SIZE_CONF = "CUSTOM_FONT_SIZE_CONF"
         const val MAX_PREVIEW_ITEMS_CONF = "MAX_PREVIEW_ITEMS_CONF"

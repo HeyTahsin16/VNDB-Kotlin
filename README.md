@@ -1,14 +1,15 @@
 <div align="center">
-  <img src="assets/icons/launcher_icon.png" width="128" height="128" alt="VNDB Lite Icon" />
-  <h1>VNDB Lite (Native Android)</h1>
+  <img src="assets/icons/launcher_icon.png" width="128" height="128" alt="VNDB Kotlin Icon" />
+  <h1>VNDB Kotlin</h1>
   <p><b>A modern, fast, free, and open-source native Android client for <a href="https://vndb.org">VNDB.org</a> built with Kotlin, Jetpack Compose, and Material 3.</b></p>
+  <p><a href="https://github.com/HeyTahsin16/VNDB-Kotlin">GitHub Repository</a> • <a href="https://github.com/HeyTahsin16/VNDB-Kotlin/issues">Issue Tracker</a></p>
 </div>
 
 ---
 
 ## Overview
 
-**VNDB Lite** is a complete native Android reimagining of VNDB Lite, built from the ground up with **Kotlin** and **Jetpack Compose** using the **VNDB Kana API v2** (`https://api.vndb.org/kana`). It provides a rich, responsive mobile and tablet interface for discovering visual novels, exploring characters and traits, reading community reviews and memorable quotes, and managing your personal visual novel collection with two-way cloud synchronization.
+**VNDB Kotlin** is a complete native Android visual novel database client built from the ground up with **Kotlin** and **Jetpack Compose** using the **VNDB Kana API v2** (`https://api.vndb.org/kana`). Inspired by `vndb-lite`, it provides a rich, responsive mobile and tablet interface for discovering visual novels, exploring characters and traits, reading community reviews and memorable quotes, and managing your personal visual novel collection with two-way cloud synchronization.
 
 ---
 
@@ -47,7 +48,7 @@
 Organized into five scrollable tabs with a hero cover/header card:
 - **General**:
   - Full BBCode-rendered **Synopsis** (`[url]`, `[b]`, `[i]`, `[u]`, `[s]`, `[spoiler]`, `[quote]`, `[code]`).
-  - **Screenshots Carousel** with NSFW blur support and fullscreen viewer.
+  - **Screenshots Carousel** with default NSFW blur protection, per-image reveal toggle, and fullscreen viewer.
   - **Tags** with spoiler filtering (`Hide Spoilers` / `Show Spoilers`) and one-tap tag search.
   - **Memorable Quotes** from the visual novel with character attribution.
   - **Reviews & Personal Notes Preview** with quick access to the full Reviews tab.
@@ -62,16 +63,16 @@ Organized into five scrollable tabs with a hero cover/header card:
   - External store and database links (*Official Website, Steam, PlayStation, Nintendo Switch, GOG, J-List, Fakku, Wikipedia, Wikidata, VNDB*) and related visual novels (*Sequel, Prequel, Fandisc, Same Setting, Alternative Version, etc.*).
 
 ### 4. Offline-First Collection & Two-Way VNDB Cloud Sync
-- Categorize visual novels into **Playing**, **Finished**, **Stalled**, **Dropped**, and **Wishlist**.
+- Categorize visual novels into **Playing**, **Finished**, **Stalled**, **Dropped**, **Wishlist**, and **Blacklist**.
 - Record personal votes (`1–10`), start/finish dates, and personal notes/reviews.
 - Local search, filtering, sorting, and multi-select batch updates/deletions.
 - **Two-Way VNDB Account Sync**: Authenticate with your personal VNDB API Token (generated from `vndb.org` -> *My Profile -> Applications*) to synchronize your local collection, ratings, statuses, and notes with your cloud VNDB `ulist`.
 
-### 5. 11 Visual Novel Inspired Themes & Adaptive Layout
+### 5. 11 Visual Novel Inspired Themes, Adaptive Layout & Default NSFW Blur
 - **11 Built-in Themes**:
   - *Dark Sky (Default), Clairvoyance (Light), Everlasting Summer, Fate/stay night, Nekopara, Rose Nier, Steins;Gate, Tsukihime, Umineko, White Album 2,* and *Yuzusoft*.
 - **Adaptive UI**: Supports both portrait handhelds (`NavigationBar`) and landscape/tablet screens (`NavigationRail` and multi-column grids).
-- **NSFW Content Controls**: Optional blur censoring for explicit visual novel covers, screenshots, and character images.
+- **NSFW Content Blurred by Default**: Automatically blurs covers, screenshots, and character images flagged for sexual or violent content across all Android versions, with one-tap per-item reveal (`NSFW 18+` / `Hide`) and a global toggle in Settings.
 
 ---
 
@@ -94,9 +95,9 @@ Organized into five scrollable tabs with a hero cover/header card:
 │       │   │   │   └── remote/
 │       │   │   │       └── VndbApiService.kt      # OkHttp + Coroutines client for VNDB Kana API v2 & reviews parser
 │       │   │   └── ui/
-│       │   │       ├── components/      # Reusable Compose cards, BBCode parser, dialogs, asset loaders
+│       │   │       ├── components/      # Reusable Compose cards, NsfwAsyncImage, BBCode parser, dialogs, asset loaders
 │       │   │       ├── screens/         # HomeScreen, SearchScreen, CollectionScreen, VnDetailScreen, Settings, Auth, About
-│       │   │       ├── theme/           # 11 custom VNDB Lite themes & Material 3 color schemes
+│       │   │       ├── theme/           # 11 custom visual novel themes & Material 3 color schemes
 │       │   │       └── viewmodel/       # VndbViewModel (StateFlow state management & cloud sync)
 │       │   └── res/                     # Adaptive launcher icons, strings, and themes
 │       └── test/
@@ -115,6 +116,12 @@ Organized into five scrollable tabs with a hero cover/header card:
 - **Android Studio Ladybug (or newer)** / Android SDK 35+
 - **JDK 17+**
 
+### Clone the Repository
+```bash
+git clone https://github.com/HeyTahsin16/VNDB-Kotlin.git
+cd VNDB-Kotlin
+```
+
 ### Build Debug APK
 ```bash
 gradle :app:assembleDebug
@@ -129,5 +136,7 @@ gradle :app:testDebugUnitTest
 
 ## Credits & License
 
+- **Repository**: [HeyTahsin16/VNDB-Kotlin](https://github.com/HeyTahsin16/VNDB-Kotlin)
 - **Database & API**: Powered by [VNDB.org](https://vndb.org) and the [VNDB Kana API v2](https://api.vndb.org/kana).
-- **License**: Distributed under the [MIT License](LICENSE).
+- **Original Inspiration**: Inspired by `vndb-lite` by Daniel C.J.
+- **License**: Distributed under the [GPL-3.0 License](LICENSE).

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VNDB Lite</string>
-    <string name="app_description">A lite, free, and open-source mobile version of your favorite website, vndb.org.</string>
+    <string name="app_name">VNDB Kotlin</string>
+    <string name="app_description">A modern, free, and open-source Kotlin Android client for vndb.org.</string>
     <string name="tab_home">Home</string>
     <string name="tab_search">Search</string>
     <string name="tab_collection">Collection</string>

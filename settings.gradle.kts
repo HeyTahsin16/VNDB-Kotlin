@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VNDB Lite"
+rootProject.name = "VNDB Kotlin"
 include(":app")

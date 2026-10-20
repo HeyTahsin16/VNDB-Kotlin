@@ -34,6 +34,7 @@ import com.vndblite.dcj.data.model.*
 import com.vndblite.dcj.ui.components.AssetImage
 import com.vndblite.dcj.ui.components.BbCodeText
 import com.vndblite.dcj.ui.components.CollectionRecordDialog
+import com.vndblite.dcj.ui.components.NsfwAsyncImage
 import com.vndblite.dcj.ui.components.VnItemGridCard
 import com.vndblite.dcj.ui.theme.LocalAppThemeCode
 import com.vndblite.dcj.ui.viewmodel.VnDetailUiState
@@ -66,7 +67,7 @@ fun VnDetailScreen(
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var showCollectionDialog by remember { mutableStateOf(false) }
-    var fullscreenScreenshotUrl by remember { mutableStateOf<String?>(null) }
+    var fullscreenScreenshot by remember { mutableStateOf<VnImage?>(null) }
     var selectedCharacterModal by remember { mutableStateOf<VnCharacter?>(null) }
     var showSpoilersInTags by remember { mutableStateOf(false) }
 
@@ -217,7 +218,7 @@ fun VnDetailScreen(
                             showSpoilersInTags = showSpoilersInTags,
                             onToggleSpoilers = { showSpoilersInTags = !showSpoilersInTags },
                             onTagClick = onTagClick,
-                            onScreenshotClick = { fullscreenScreenshotUrl = it },
+                            onScreenshotClick = { fullscreenScreenshot = it },
                             onOpenReviewsTab = { selectedTab = 2 },
                             onEditCollectionNote = { showCollectionDialog = true }
                         )
@@ -333,23 +334,59 @@ fun VnDetailScreen(
     }
 
     // Fullscreen Screenshot Dialog
-    fullscreenScreenshotUrl?.let { url ->
-        Dialog(onDismissRequest = { fullscreenScreenshotUrl = null }) {
+    fullscreenScreenshot?.let { shot ->
+        val isShotExplicit = shot.isExplicit && settings.showCoverCensor
+        var revealFullscreenShot by remember(shot.url) { mutableStateOf(false) }
+        val shouldBlurFullscreen = isShotExplicit && !revealFullscreenShot
+
+        Dialog(onDismissRequest = { fullscreenScreenshot = null }) {
             Surface(
-                color = Color.Black.copy(alpha = 0.92f),
+                color = Color.Black.copy(alpha = 0.94f),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { fullscreenScreenshotUrl = null }
+                    .clickable { fullscreenScreenshot = null }
             ) {
-                AsyncImage(
-                    model = url,
-                    contentDescription = "Screenshot",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    NsfwAsyncImage(
+                        imageUrl = shot.url,
+                        contentDescription = "Screenshot",
+                        shouldBlur = shouldBlurFullscreen,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
+                    if (isShotExplicit) {
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.78f),
+                            shape = RoundedCornerShape(10.dp),
+                            onClick = { revealFullscreenShot = !revealFullscreenShot },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(14.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (shouldBlurFullscreen) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = "Toggle NSFW Screenshot",
+                                    tint = Color(0xFFFF8A80),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (shouldBlurFullscreen) "Reveal NSFW (18+)" else "Hide NSFW",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -413,26 +450,26 @@ private fun VnDetailHeaderCard(
                 ) {
                     val url = p1.image?.url?.ifEmpty { p1.image.thumbnail }.orEmpty()
                     if (url.isNotBlank()) {
-                        AsyncImage(
-                            model = url,
+                        NsfwAsyncImage(
+                            imageUrl = url,
                             contentDescription = p1.title,
+                            shouldBlur = shouldBlur,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(if (shouldBlur) Modifier.blur(20.dp) else Modifier)
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     if (isExplicit && showCoverCensor) {
                         Surface(
-                            color = Color.Black.copy(alpha = 0.65f),
+                            color = Color.Black.copy(alpha = 0.72f),
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier
                                 .align(Alignment.TopStart)
                                 .padding(6.dp)
                         ) {
                             Text(
-                                text = if (shouldBlur) "Tap 18+" else "Hide",
+                                text = if (shouldBlur) "NSFW 18+" else "Hide",
                                 style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
                                 color = Color.White,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
@@ -602,7 +639,7 @@ private fun VnDetailGeneralSection(
     showSpoilersInTags: Boolean,
     onToggleSpoilers: () -> Unit,
     onTagClick: (VnTag) -> Unit,
-    onScreenshotClick: (String) -> Unit,
+    onScreenshotClick: (VnImage) -> Unit,
     onOpenReviewsTab: () -> Unit,
     onEditCollectionNote: () -> Unit
 ) {
@@ -653,22 +690,52 @@ private fun VnDetailGeneralSection(
                     Spacer(modifier = Modifier.height(10.dp))
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(p2.screenshots, key = { it.url }) { shot ->
-                            val blurShot = shot.isExplicit && showCoverCensor
+                            val isShotExplicit = shot.isExplicit && showCoverCensor
+                            var revealShot by remember(shot.url) { mutableStateOf(false) }
+                            val blurShot = isShotExplicit && !revealShot
                             Box(
                                 modifier = Modifier
                                     .width(210.dp)
                                     .height(122.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .clickable { onScreenshotClick(shot.url) }
+                                    .clickable { onScreenshotClick(shot) }
                             ) {
-                                AsyncImage(
-                                    model = shot.url,
+                                NsfwAsyncImage(
+                                    imageUrl = shot.url,
                                     contentDescription = "Screenshot",
+                                    shouldBlur = blurShot,
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .then(if (blurShot) Modifier.blur(18.dp) else Modifier)
+                                    modifier = Modifier.fillMaxSize()
                                 )
+                                if (isShotExplicit) {
+                                    Surface(
+                                        color = Color.Black.copy(alpha = 0.72f),
+                                        shape = RoundedCornerShape(6.dp),
+                                        onClick = { revealShot = !revealShot },
+                                        modifier = Modifier
+                                            .align(Alignment.TopStart)
+                                            .padding(6.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (blurShot) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                contentDescription = "Toggle NSFW Screenshot",
+                                                tint = Color(0xFFFF8A80),
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(3.dp))
+                                            Text(
+                                                text = if (blurShot) "NSFW 18+" else "Hide",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
