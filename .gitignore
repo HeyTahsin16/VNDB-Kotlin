@@ -1,0 +1,31 @@
+# Android / Gradle
+.gradle/
+.kotlin/
+build/
+/app/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+.navigation/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.vscode/settings.json
+
+# AI Studio temporary attachments
+/public/assets/aistudio/

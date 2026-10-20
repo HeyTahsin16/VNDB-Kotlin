@@ -1,0 +1,6 @@
+{
+  "name": "VNDB Lite",
+  "description": "A lite, free, and open-source mobile version of vndb.org with character traits search, collection sync, and 11 visual novel themes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

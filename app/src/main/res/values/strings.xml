@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VNDB Lite</string>
+    <string name="app_description">A lite, free, and open-source mobile version of your favorite website, vndb.org.</string>
+    <string name="tab_home">Home</string>
+    <string name="tab_search">Search</string>
+    <string name="tab_collection">Collection</string>
+    <string name="tab_others">Others</string>
+    <string name="search_hint">Search visual novels or characters...</string>
+    <string name="no_results">No further results ;)</string>
+    <string name="connection_error">Connection error, unable to fetch data. Please try again later.</string>
+    <string name="explore_genres">Explore General Genres</string>
+    <string name="add_to_collection">Add to collection</string>
+    <string name="user_authentication">User Authentication</string>
+    <string name="settings_title">Settings</string>
+    <string name="about_title">About</string>
+</resources>
