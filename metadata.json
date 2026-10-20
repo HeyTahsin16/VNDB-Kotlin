@@ -1,6 +1,0 @@
-{
-  "name": "VNDB Kotlin",
-  "description": "A modern, fast, free, and open-source native Kotlin Android client for vndb.org with character traits search, reviews, quotes, collection sync, and 11 visual novel themes.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

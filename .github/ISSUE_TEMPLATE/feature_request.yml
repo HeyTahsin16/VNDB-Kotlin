@@ -1,0 +1,24 @@
+name: Feature Request
+description: Suggest an enhancement or new VNDB feature for VNDB Kotlin
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this feature solve when browsing or managing visual novels?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe how you would like the feature to work.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context / VNDB API Reference
+      description: Any relevant VNDB Kana API v2 endpoints, fields, or mockups.

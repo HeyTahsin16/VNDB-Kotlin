@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vndblite.dcj.data.model.VnDataPhase01
 import com.vndblite.dcj.ui.screens.*
 import com.vndblite.dcj.ui.theme.LocalAppThemeCode
-import com.vndblite.dcj.ui.theme.VndbLiteTheme
+import com.vndblite.dcj.ui.theme.VndbTheme
 import com.vndblite.dcj.ui.viewmodel.SearchTabMode
 import com.vndblite.dcj.ui.viewmodel.VndbViewModel
 
@@ -54,16 +54,17 @@ sealed interface SubRoute {
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.vndblite.dcj.core.StrictModeInitializer.enableIfDebug()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            VndbLiteApp()
+            VndbApp()
         }
     }
 }
 
 @Composable
-fun VndbLiteApp(vm: VndbViewModel = viewModel()) {
+fun VndbApp(vm: VndbViewModel = viewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val homeState by vm.homeState.collectAsStateWithLifecycle()
     val searchState by vm.searchState.collectAsStateWithLifecycle()
@@ -101,7 +102,7 @@ fun VndbLiteApp(vm: VndbViewModel = viewModel()) {
         popRoute()
     }
 
-    VndbLiteTheme(
+    VndbTheme(
         themeCode = settings.themeCode,
         fontSizeOffset = settings.fontSizeOffset
     ) {

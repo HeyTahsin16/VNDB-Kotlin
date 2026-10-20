@@ -1,0 +1,34 @@
+{
+  "more": false,
+  "results": [
+    {
+      "id": "c35",
+      "name": "Yagami Koko",
+      "original": "八神 ココ",
+      "aliases": ["Koko"],
+      "description": "A cheerful high school girl visiting LeMU.",
+      "blood_type": "o",
+      "height": 152,
+      "weight": 41,
+      "bust": 77,
+      "waist": 55,
+      "hips": 79,
+      "cup": "B",
+      "age": 14,
+      "birthday": [12, 17],
+      "sex": ["f", "f"],
+      "image": {
+        "url": "https://t.vndb.org/ch/35/999.jpg",
+        "dims": [300, 450],
+        "sexual": 0.0,
+        "violence": 0.0
+      },
+      "vns": [
+        { "id": "v17", "title": "Ever17 -the out of infinity-", "role": "primary", "spoiler": 0 }
+      ],
+      "traits": [
+        { "id": "i17", "name": "Twin Tails", "group_id": "i1", "group_name": "Hair", "spoiler": 0 }
+      ]
+    }
+  ]
+}

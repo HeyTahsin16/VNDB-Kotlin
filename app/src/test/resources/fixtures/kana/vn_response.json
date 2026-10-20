@@ -1,0 +1,50 @@
+{
+  "more": false,
+  "results": [
+    {
+      "id": "v17",
+      "title": "Ever17 -the out of infinity-",
+      "olang": "ja",
+      "released": "2002-08-29",
+      "rating": 86.4,
+      "votecount": 7540,
+      "length": 4,
+      "length_minutes": 2150,
+      "devstatus": 0,
+      "description": "Seven people are trapped in an underwater theme park called LeMU.",
+      "aliases": ["Ever17", "E17"],
+      "languages": ["en", "ja", "zh-Hans"],
+      "platforms": ["win", "psp", "drc"],
+      "image": {
+        "url": "https://t.vndb.org/cv/17/12345.jpg",
+        "thumbnail": "https://t.vndb.org/cv.t/17/12345.jpg",
+        "dims": [400, 600],
+        "sexual": 0.0,
+        "violence": 0.1
+      },
+      "tags": [
+        { "id": "g19", "name": "Mystery", "rating": 2.8, "spoiler": 0.0 },
+        { "id": "g105", "name": "Sci-fi", "rating": 2.9, "spoiler": 0.4 }
+      ],
+      "developers": [
+        { "id": "p24", "name": "KID" }
+      ],
+      "screenshots": [
+        {
+          "id": "sf101",
+          "url": "https://t.vndb.org/sf/01/101.jpg",
+          "thumbnail": "https://t.vndb.org/sf.t/01/101.jpg",
+          "dims": [1280, 720],
+          "sexual": 0.0,
+          "violence": 0.0
+        }
+      ],
+      "extlinks": [
+        { "url": "https://en.wikipedia.org/wiki/Ever_17:_The_Out_of_Infinity", "label": "Wikipedia", "name": "wikipedia", "id": "Ever_17" }
+      ],
+      "relations": [
+        { "id": "v13", "relation": "ser", "relation_official": true }
+      ]
+    }
+  ]
+}

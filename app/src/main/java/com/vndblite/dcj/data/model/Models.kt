@@ -1,10 +1,17 @@
 package com.vndblite.dcj.data.model
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.max
 import kotlin.math.min
+
+/**
+ * WCAG 2.x relative luminance crossover point (~0.179) where white foreground text
+ * achieves higher contrast than black foreground text.
+ */
+const val WCAG_DARK_SURFACE_LUMINANCE_THRESHOLD: Float = 0.179f
 
 enum class ThemeCode(
     val code: String,
@@ -12,8 +19,7 @@ enum class ThemeCode(
     val backgroundImgPath: String,
     val primary: Color,
     val secondary: Color,
-    val tertiary: Color,
-    val isDark: Boolean
+    val tertiary: Color
 ) {
     AGL(
         code = "agl",
@@ -21,8 +27,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgAngel.png",
         primary = Color(0xFF325064),
         secondary = Color(0xFF8CDCFF),
-        tertiary = Color.White,
-        isDark = false
+        tertiary = Color.White
     ),
     AIR(
         code = "air",
@@ -30,8 +35,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgAIR.png",
         primary = Color(0xFFB4DCFF),
         secondary = Color(0xFF5082E1),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     EV17(
         code = "ev17",
@@ -39,8 +43,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgEver17.png",
         primary = Color(0xFF6EC8D2),
         secondary = Color(0xFFF0AA64),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     FATE(
         code = "fate",
@@ -48,8 +51,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgFate.png",
         primary = Color(0xFF463232),
         secondary = Color(0xFFD26446),
-        tertiary = Color.White,
-        isDark = false
+        tertiary = Color.White
     ),
     CARNVL(
         code = "carnvl",
@@ -57,8 +59,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgCarnevale.png",
         primary = Color(0xFF141414),
         secondary = Color(0xFFBEBEBE),
-        tertiary = Color.White,
-        isDark = false
+        tertiary = Color.White
     ),
     HGRSHI(
         code = "hgrshi",
@@ -66,8 +67,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgHigurashi.png",
         primary = Color(0xFFF5B4AF),
         secondary = Color(0xFFDCDCDC),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     TSUKHME(
         code = "tsukhme",
@@ -75,8 +75,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgTsukihime.png",
         primary = Color(0xFF645050),
         secondary = Color(0xFFFA4646),
-        tertiary = Color.White,
-        isDark = false
+        tertiary = Color.White
     ),
     TOHO(
         code = "toho",
@@ -84,8 +83,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgTouhou.png",
         primary = Color(0xFFAFAFAF),
         secondary = Color(0xFFDCD7D7),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     SEINRKN(
         code = "seinrkn",
@@ -93,8 +91,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgSeinaru.png",
         primary = Color(0xFFFFF0F0),
         secondary = Color(0xFFFF4696),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     LILBUSTS(
         code = "lilbusts",
@@ -102,8 +99,7 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgLittleBusters.png",
         primary = Color(0xFFFAC8FA),
         secondary = Color(0xFFF050D7),
-        tertiary = Color.Black,
-        isDark = true
+        tertiary = Color.Black
     ),
     SAYA(
         code = "saya",
@@ -111,9 +107,18 @@ enum class ThemeCode(
         backgroundImgPath = "assets/images/bg/bgSaya.png",
         primary = Color(0xFF326450),
         secondary = Color(0xFFF0B48C),
-        tertiary = Color.White,
-        isDark = false
+        tertiary = Color.White
     );
+
+    /**
+     * Single source of truth for whether this theme's surface is dark, derived from
+     * its opaque surface relative luminance (B7, F7).
+     */
+    val hasDarkSurface: Boolean
+        get() = primary.copy(alpha = 1f).luminance() < WCAG_DARK_SURFACE_LUMINANCE_THRESHOLD
+
+    val paletteLabel: String
+        get() = if (hasDarkSurface) "Dark Palette" else "Light Palette"
 
     companion object {
         fun fromCode(code: String?): ThemeCode {

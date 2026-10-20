@@ -1,5 +1,6 @@
 package com.vndblite.dcj.data.remote
 
+import com.vndblite.dcj.core.AppInfo
 import com.vndblite.dcj.data.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -54,6 +55,7 @@ class VndbApiService {
         val reqBuilder = Request.Builder()
             .url("$BASE_URL$endpoint")
             .post(bodyObj.toString().toRequestBody(JSON_MEDIA))
+            .header("User-Agent", AppInfo.userAgent)
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
         if (!authToken.isNullOrBlank()) {
@@ -75,6 +77,7 @@ class VndbApiService {
         val reqBuilder = Request.Builder()
             .url(url)
             .get()
+            .header("User-Agent", AppInfo.userAgent)
             .header("Accept", "application/json")
         if (!authToken.isNullOrBlank()) {
             reqBuilder.header("Authorization", "token $authToken")
@@ -92,7 +95,7 @@ class VndbApiService {
         val req = Request.Builder()
             .url(url)
             .get()
-            .header("User-Agent", "Mozilla/5.0 (Android; VNDBLite/2.0)")
+            .header("User-Agent", AppInfo.userAgent)
             .header("Accept", "text/html,application/xhtml+xml")
             .build()
         client.newCall(req).execute().use { resp ->
@@ -475,6 +478,7 @@ class VndbApiService {
         val req = Request.Builder()
             .url("$BASE_URL/ulist/${localRecord.id}")
             .patch(body.toString().toRequestBody(JSON_MEDIA))
+            .header("User-Agent", AppInfo.userAgent)
             .header("Content-Type", "application/json")
             .header("Authorization", "token $authToken")
             .build()
@@ -490,6 +494,7 @@ class VndbApiService {
         val req = Request.Builder()
             .url("$BASE_URL/ulist/$vnId")
             .delete()
+            .header("User-Agent", AppInfo.userAgent)
             .header("Content-Type", "application/json")
             .header("Authorization", "token $authToken")
             .build()

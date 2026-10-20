@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Auto Backup configuration for Android 11 (API 30) and lower (B6, S5).
+    Backs up the Room database and non-sensitive DataStore settings while
+    excluding encrypted API token storage and legacy preferences.
+-->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="file" path="datastore/" />
+    <include domain="sharedpref" path="." />
+
+    <exclude domain="file" path="datastore/vndb_secure_token.preferences_pb" />
+    <exclude domain="sharedpref" path="vndb_secure_token_prefs.xml" />
+    <exclude domain="sharedpref" path="VndbKotlinPreferences.xml" />
+</full-backup-content>

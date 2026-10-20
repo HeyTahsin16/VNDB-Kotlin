@@ -179,13 +179,65 @@ class VndbModelsTest {
     }
 
     @Test
-    fun `ThemeCode and DefaultChartStats work cleanly`() {
+    fun `ThemeCode and DefaultChartStats and AppInfo work cleanly`() {
         assertEquals(11, ThemeCode.entries.size)
+        val expectedThemes = listOf(
+            "agl" to "Angel Serenade",
+            "air" to "AIR",
+            "ev17" to "Ever17",
+            "fate" to "Fate/Stay Night",
+            "carnvl" to "Gekkou No Carnevale",
+            "hgrshi" to "Higurashi No Naku Koro Ni",
+            "tsukhme" to "Tsukihime",
+            "toho" to "Touhou",
+            "seinrkn" to "Seinarukana",
+            "lilbusts" to "Little Busters!",
+            "saya" to "Saya No Uta"
+        )
+        assertEquals(expectedThemes, ThemeCode.entries.map { it.code to it.themeName })
+
+        val expectedPaletteLabels = mapOf(
+            ThemeCode.AGL to "Dark Palette",
+            ThemeCode.AIR to "Light Palette",
+            ThemeCode.EV17 to "Light Palette",
+            ThemeCode.FATE to "Dark Palette",
+            ThemeCode.CARNVL to "Dark Palette",
+            ThemeCode.HGRSHI to "Light Palette",
+            ThemeCode.TSUKHME to "Dark Palette",
+            ThemeCode.TOHO to "Light Palette",
+            ThemeCode.SEINRKN to "Light Palette",
+            ThemeCode.LILBUSTS to "Light Palette",
+            ThemeCode.SAYA to "Dark Palette"
+        )
+        ThemeCode.entries.forEach { theme ->
+            assertEquals(
+                "Unexpected palette label for ${theme.code}",
+                expectedPaletteLabels.getValue(theme),
+                theme.paletteLabel
+            )
+            assertEquals(
+                "hasDarkSurface mismatch with tertiary foreground contrast for ${theme.code}",
+                theme.tertiary == androidx.compose.ui.graphics.Color.White,
+                theme.hasDarkSurface
+            )
+        }
+
         val stats = DefaultChartStats.items()
         assertEquals(7, stats.size)
 
         val settings = SettingsState(themeCode = ThemeCode.FATE, showCoverCensor = true, maxPreviewItem = 20)
         assertEquals(ThemeCode.FATE, ThemeCode.fromCode(settings.themeCode.code))
+
+        assertEquals("VNDB Kotlin", com.vndblite.dcj.core.AppInfo.APP_NAME)
+        assertEquals("Apache-2.0", com.vndblite.dcj.core.AppInfo.APP_LICENSE)
+        assertEquals("3.6.0", com.vndblite.dcj.core.AppInfo.VERSION_NAME)
+        assertEquals(30600, com.vndblite.dcj.core.AppInfo.VERSION_CODE)
+        assertEquals("https://github.com/HeyTahsin16/VNDB-Kotlin", com.vndblite.dcj.core.AppInfo.GITHUB_REPO_URL)
+        assertEquals("https://vndb.org/d17#4", com.vndblite.dcj.core.AppInfo.VNDB_DATA_LICENSE_URL)
+        assertEquals(
+            "VNDBKotlin/3.6.0 (+https://github.com/HeyTahsin16/VNDB-Kotlin)",
+            com.vndblite.dcj.core.AppInfo.userAgent
+        )
     }
 
     @Test

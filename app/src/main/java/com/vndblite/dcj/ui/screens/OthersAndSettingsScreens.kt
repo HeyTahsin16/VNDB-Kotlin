@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.vndblite.dcj.core.AppInfo
 import com.vndblite.dcj.data.model.*
 import com.vndblite.dcj.ui.components.AssetImage
 import com.vndblite.dcj.ui.components.VnItemGridCard
@@ -141,8 +142,8 @@ fun OthersScreen(
         item {
             OthersMenuTile(
                 icon = Icons.Default.Info,
-                title = "About VNDB Kotlin",
-                subtitle = "Version info, credits, source code & license",
+                title = "About ${AppInfo.APP_NAME}",
+                subtitle = "Version ${AppInfo.versionName}, credits, source code & license",
                 onClick = onOpenAbout,
                 testTag = "others_about_tile"
             )
@@ -152,11 +153,11 @@ fun OthersScreen(
             OthersMenuTile(
                 icon = Icons.Default.BugReport,
                 title = "Report a Bug / Feedback",
-                subtitle = "Open issue tracker on GitHub (HeyTahsin16/VNDB-Kotlin)",
+                subtitle = "Open issue tracker on GitHub (${AppInfo.GITHUB_REPO_SLUG})",
                 onClick = {
                     runCatching {
                         context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin/issues"))
+                            Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.GITHUB_ISSUES_URL))
                         )
                     }
                 },
@@ -320,7 +321,7 @@ fun SettingsScreen(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 Text(
-                                                    text = if (candidate.isDark) "Dark Palette" else "Light Palette",
+                                                    text = candidate.paletteLabel,
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = candidate.tertiary.copy(alpha = 0.8f)
                                                 )
@@ -1022,28 +1023,80 @@ fun AboutScreen(onBack: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "VNDB Kotlin",
+                        text = AppInfo.APP_NAME,
                         style = MaterialTheme.typography.headlineMedium,
                         color = theme.secondary,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Native Android Edition • Kotlin & Jetpack Compose",
+                        text = "Version ${AppInfo.versionName} • Kotlin & Jetpack Compose",
                         style = MaterialTheme.typography.bodyMedium,
                         color = theme.tertiary.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "A fast, free, and open-source native Android client for The Visual Novel Database (vndb.org), featuring Character & Traits search, Community Reviews, Memorable Quotes, local offline caching, 11 classic visual novel themes, and two-way cloud synchronization.",
+                        text = "A free and open-source Android client for The Visual Novel Database (vndb.org) written in Kotlin and Jetpack Compose, inspired by vndb-lite. Browse visual novels, explore characters and traits, read community reviews and memorable quotes, customize 11 visual novel themes, and synchronize your collection.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = theme.tertiary
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Repository: HeyTahsin16/VNDB-Kotlin • License: GPL-3.0",
+                        text = "Repository: ${AppInfo.GITHUB_REPO_SLUG} • License: ${AppInfo.APP_LICENSE}",
                         style = MaterialTheme.typography.labelMedium,
                         color = theme.secondary
                     )
+                }
+            }
+
+            Surface(
+                color = theme.primary.copy(alpha = 0.86f),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Credits & Attribution",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = theme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Special thanks to vndb-lite by ${AppInfo.UPSTREAM_FLUTTER_AUTHOR} (${AppInfo.UPSTREAM_FLUTTER_REPO_SLUG}), the original Flutter application that inspired this project and from which visual themes, icons, and layout concepts were carried over.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = theme.tertiary.copy(alpha = 0.9f)
+                    )
+                    OutlinedButton(
+                        onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.UPSTREAM_FLUTTER_REPO_URL)))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, tint = theme.secondary, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Original Flutter App (${AppInfo.UPSTREAM_FLUTTER_REPO_SLUG})", color = theme.tertiary)
+                    }
+                    Text(
+                        text = "Visual novel metadata, character records, quotes, and reviews are provided by The Visual Novel Database (VNDB.org) under its public database license.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = theme.tertiary.copy(alpha = 0.9f)
+                    )
+                    OutlinedButton(
+                        onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.VNDB_DATA_LICENSE_URL)))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Gavel, contentDescription = null, tint = theme.secondary, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("VNDB.org Data License (vndb.org/d17#4)", color = theme.tertiary)
+                    }
                 }
             }
 
@@ -1066,7 +1119,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     OutlinedButton(
                         onClick = {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin")))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.GITHUB_REPO_URL)))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -1077,13 +1130,13 @@ fun AboutScreen(onBack: () -> Unit) {
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("GitHub Repository (HeyTahsin16/VNDB-Kotlin)", color = theme.tertiary)
+                        Text("GitHub Repository (${AppInfo.GITHUB_REPO_SLUG})", color = theme.tertiary)
                     }
 
                     OutlinedButton(
                         onClick = {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/HeyTahsin16/VNDB-Kotlin/issues")))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.GITHUB_ISSUES_URL)))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -1096,7 +1149,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     OutlinedButton(
                         onClick = {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://vndb.org")))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppInfo.VNDB_URL)))
                             }
                         },
                         modifier = Modifier.fillMaxWidth()

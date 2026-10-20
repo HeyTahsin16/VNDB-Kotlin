@@ -1,6 +1,7 @@
 # Android / Gradle
 .gradle/
 .kotlin/
+.build-outputs/
 build/
 /app/build/
 local.properties
@@ -12,20 +13,28 @@ captures/
 *.ap_
 *.dex
 
-# IntelliJ / Android Studio
-*.iml
-*.ipr
-*.iws
+# Keep Gradle Wrapper JAR tracked in Git
+!gradle/wrapper/gradle-wrapper.jar
+
+# Signing & Secrets (keep keystore.properties.example tracked)
+.env
+.env.*
+.env.example
+*.jks
+*.keystore
+*.keystore.base64
+keystore.properties
+
+# AI Studio / Cloud workspace files (untracked for GitHub, kept locally)
+.aistudio/
+/public/
+public/assets/aistudio/
+metadata.json
+
+# IDE / OS
 .idea/
-.navigation/
-
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
+*.iml
 .DS_Store
-.vscode/settings.json
-
-# AI Studio temporary attachments
-/public/assets/aistudio/
+Thumbs.db
+*~
+*.swp

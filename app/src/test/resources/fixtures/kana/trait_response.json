@@ -1,0 +1,15 @@
+{
+  "more": false,
+  "results": [
+    {
+      "id": "i154",
+      "name": "Tsundere",
+      "group_id": "i150",
+      "group_name": "Personality",
+      "description": "Initially cold or hostile before warming up.",
+      "aliases": ["Tsun"],
+      "char_count": 4820,
+      "spoiler": 0
+    }
+  ]
+}

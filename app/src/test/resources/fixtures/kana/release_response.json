@@ -1,0 +1,19 @@
+{
+  "more": false,
+  "results": [
+    {
+      "id": "r100",
+      "minage": 12,
+      "languages": [
+        { "lang": "ja", "mtl": false }
+      ]
+    },
+    {
+      "id": "r101",
+      "minage": 18,
+      "languages": [
+        { "lang": "en", "mtl": true }
+      ]
+    }
+  ]
+}

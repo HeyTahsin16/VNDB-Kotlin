@@ -1,0 +1,5 @@
+{
+  "id": "u42",
+  "username": "testreader",
+  "permissions": ["listread", "listwrite"]
+}

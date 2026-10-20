@@ -1,0 +1,30 @@
+{
+  "more": false,
+  "results": [
+    {
+      "id": "q101",
+      "quote": "Who am I looking at in the mirror?",
+      "score": 42,
+      "character": {
+        "id": "c35",
+        "name": "Yagami Koko",
+        "original": "八神 ココ"
+      },
+      "vn": {
+        "id": "v17",
+        "title": "Ever17 -the out of infinity-",
+        "rating": 86.4,
+        "votecount": 7540,
+        "released": "2002-08-29",
+        "olang": "ja",
+        "length": 4,
+        "image": {
+          "url": "https://t.vndb.org/cv/17/12345.jpg",
+          "thumbnail": "https://t.vndb.org/cv.t/17/12345.jpg",
+          "sexual": 0.0,
+          "violence": 0.1
+        }
+      }
+    }
+  ]
+}

@@ -1,199 +1,254 @@
 package com.vndblite.dcj.ui.components
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.vndblite.dcj.ui.theme.LocalAppThemeCode
+import com.vndblite.dcj.R
+import com.vndblite.dcj.domain.model.ThemeId
+import com.vndblite.dcj.ui.format.ExternalUriOpener
+import com.vndblite.dcj.ui.format.openExternalUrl
+import com.vndblite.dcj.ui.theme.VndbTheme
 
+const val BBCODE_URL_ANNOTATION_TAG: String = "URL"
+
+/**
+ * Renders VNDB BBCode text using [BbCodeParser], memoized AST + [AnnotatedString] construction,
+ * modern [LinkAnnotation.Url] (replacing deprecated `ClickableText`), and the global spoiler reveal toggle (U1, U5, U6, U7).
+ */
 @Composable
 fun BbCodeText(
     rawText: String,
     modifier: Modifier = Modifier,
-    textColor: Color = LocalAppThemeCode.current.tertiary,
-    linkColor: Color = LocalAppThemeCode.current.secondary,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    linkColor: Color = MaterialTheme.colorScheme.primary,
     style: TextStyle = MaterialTheme.typography.bodyMedium
 ) {
     val context = LocalContext.current
-    val hasSpoilers = remember(rawText) { rawText.contains("[spoiler]", ignoreCase = true) }
-    var revealSpoilers by remember(rawText) { mutableStateOf(false) }
+    val parsedNodes = remember(rawText) { BbCodeParser.parse(rawText) }
+    val hasSpoilers = remember(parsedNodes) { BbCodeParser.containsSpoiler(rawText) }
+    var revealSpoilers by rememberSaveable(rawText) { mutableStateOf(false) }
 
-    val annotated = remember(rawText, revealSpoilers, textColor, linkColor) {
-        parseBbCodeToAnnotatedString(
-            input = rawText,
-            revealSpoilers = revealSpoilers,
-            baseColor = textColor,
-            linkColor = linkColor
-        )
+    val spoilerPlaceholder = stringResource(R.string.bbcode_spoiler_placeholder)
+    val emptyPlaceholder = stringResource(R.string.bbcode_empty_placeholder)
+
+    val linkListener = remember(context) {
+        LinkInteractionListener { link ->
+            val url = (link as? LinkAnnotation.Url)?.url
+            if (!url.isNullOrBlank()) {
+                context.openExternalUrl(url)
+            }
+        }
+    }
+
+    val annotated = remember(
+        parsedNodes,
+        revealSpoilers,
+        textColor,
+        linkColor,
+        spoilerPlaceholder,
+        emptyPlaceholder,
+        linkListener
+    ) {
+        if (rawText.isBlank()) {
+            AnnotatedString(emptyPlaceholder)
+        } else {
+            buildAnnotatedStringFromBbCodeNodes(
+                nodes = parsedNodes,
+                revealSpoilers = revealSpoilers,
+                baseColor = textColor,
+                linkColor = linkColor,
+                spoilerPlaceholder = spoilerPlaceholder,
+                linkInteractionListener = linkListener
+            )
+        }
     }
 
     Column(modifier = modifier) {
         if (hasSpoilers) {
+            val toggleLabel = if (revealSpoilers) {
+                stringResource(R.string.bbcode_hide_spoilers)
+            } else {
+                stringResource(R.string.bbcode_reveal_spoilers)
+            }
             Surface(
-                color = linkColor.copy(alpha = 0.2f),
+                color = linkColor.copy(alpha = 0.20f),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .padding(bottom = 6.dp)
-                    .clickable { revealSpoilers = !revealSpoilers }
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable(role = Role.Button) { revealSpoilers = !revealSpoilers }
             ) {
                 Text(
-                    text = if (revealSpoilers) "Hide Spoilers" else "Tap to Reveal Spoilers",
+                    text = toggleLabel,
                     style = MaterialTheme.typography.labelMedium,
                     color = linkColor,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }
         }
 
-        ClickableText(
+        Text(
             text = annotated,
-            style = style.copy(color = textColor),
-            onClick = { offset ->
-                annotated.getStringAnnotations(tag = "URL", start = offset, end = offset)
-                    .firstOrNull()?.let { annotation ->
-                        val url = annotation.item
-                        runCatching {
-                            val fullUrl = if (url.startsWith("/")) {
-                                "https://vndb.org$url"
-                            } else if (!url.startsWith("http")) {
-                                "https://$url"
-                            } else {
-                                url
-                            }
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fullUrl)))
-                        }
-                    }
-            }
+            style = style.copy(color = textColor)
         )
     }
 }
 
-private fun parseBbCodeToAnnotatedString(
-    input: String,
+/**
+ * Pure helper converting parsed [BbCodeNode] trees into a styled [AnnotatedString] (U5, U7).
+ */
+fun buildAnnotatedStringFromBbCodeNodes(
+    nodes: List<BbCodeNode>,
     revealSpoilers: Boolean,
     baseColor: Color,
-    linkColor: Color
-): AnnotatedString {
-    if (input.isBlank()) return AnnotatedString("--")
+    linkColor: Color,
+    spoilerPlaceholder: String = "[Spoiler Hidden]",
+    linkInteractionListener: LinkInteractionListener? = null
+): AnnotatedString = buildAnnotatedString {
+    fun renderNodes(list: List<BbCodeNode>) {
+        for (node in list) {
+            when (node) {
+                is BbCodeNode.Text -> append(node.text)
+                is BbCodeNode.Bold -> {
+                    pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                    renderNodes(node.children)
+                    pop()
+                }
+                is BbCodeNode.Italic -> {
+                    pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                    renderNodes(node.children)
+                    pop()
+                }
+                is BbCodeNode.Underline -> {
+                    pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                    renderNodes(node.children)
+                    pop()
+                }
+                is BbCodeNode.Strikethrough -> {
+                    pushStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                    renderNodes(node.children)
+                    pop()
+                }
+                is BbCodeNode.Code -> {
+                    pushStyle(
+                        SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            background = baseColor.copy(alpha = 0.15f)
+                        )
+                    )
+                    renderNodes(node.children)
+                    pop()
+                }
+                is BbCodeNode.Quote -> {
+                    append("\n“")
+                    pushStyle(SpanStyle(fontStyle = FontStyle.Italic, color = baseColor.copy(alpha = 0.90f)))
+                    renderNodes(node.children)
+                    pop()
+                    append("”\n")
+                }
+                is BbCodeNode.Spoiler -> {
+                    if (revealSpoilers) {
+                        pushStyle(SpanStyle(background = baseColor.copy(alpha = 0.14f)))
+                        renderNodes(node.children)
+                        pop()
+                    } else {
+                        pushStyle(
+                            SpanStyle(
+                                color = linkColor,
+                                fontStyle = FontStyle.Italic,
+                                background = linkColor.copy(alpha = 0.14f)
+                            )
+                        )
+                        append(" $spoilerPlaceholder ")
+                        pop()
+                    }
+                }
+                is BbCodeNode.Url -> {
+                    val resolvedUrl = ExternalUriOpener.normalizeExternalUrl(node.target)
+                    val linkStyle = SpanStyle(
+                        color = linkColor,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Medium
+                    )
+                    val startOffset = length
+                    pushLink(
+                        LinkAnnotation.Url(
+                            url = resolvedUrl,
+                            styles = TextLinkStyles(style = linkStyle),
+                            linkInteractionListener = linkInteractionListener
+                        )
+                    )
+                    pushStyle(linkStyle)
+                    renderNodes(node.children)
+                    pop()
+                    pop()
+                    val endOffset = length
+                    if (endOffset > startOffset) {
+                        addStringAnnotation(
+                            tag = BBCODE_URL_ANNOTATION_TAG,
+                            annotation = resolvedUrl,
+                            start = startOffset,
+                            end = endOffset
+                        )
+                    }
+                }
+            }
+        }
+    }
+    renderNodes(nodes)
+}
 
-    var working = input
-        .replace("\r\n", "\n")
-        .replace(Regex("\\[raw\\]([\\s\\S]*?)\\[/raw\\]", RegexOption.IGNORE_CASE), "$1")
-        .replace(Regex("\\[quote\\]([\\s\\S]*?)\\[/quote\\]", RegexOption.IGNORE_CASE), "\n“$1”\n")
-
-    if (!revealSpoilers) {
-        working = working.replace(
-            Regex("\\[spoiler\\]([\\s\\S]*?)\\[/spoiler\\]", RegexOption.IGNORE_CASE),
-            " [Spoiler Hidden] "
-        )
-    } else {
-        working = working.replace(
-            Regex("\\[/?spoiler\\]", RegexOption.IGNORE_CASE),
-            ""
+@Preview(name = "BbCodeText - Dark Theme", showBackground = true)
+@Composable
+private fun BbCodeTextDarkPreview() {
+    VndbTheme(themeId = ThemeId.AGL, includeBackground = true) {
+        BbCodeText(
+            rawText = "A [b]bold and [i]nested italic[/i][/b] description with [spoiler]a hidden twist[/spoiler], " +
+                "literal [1] bracket, and [url=/v17]Ever17 link[/url].",
+            modifier = Modifier.padding(12.dp)
         )
     }
+}
 
-    return buildAnnotatedString {
-        var idx = 0
-        val tokenRegex = Regex(
-            "\\[(b|i|u|s|code)\\]([\\s\\S]*?)\\[/\\1\\]|\\[url=([^\\]]+)\\]([\\s\\S]*?)\\[/url\\]|\\[url\\]([\\s\\S]*?)\\[/url\\]",
-            RegexOption.IGNORE_CASE
+@Preview(name = "BbCodeText - Light Theme", showBackground = true)
+@Composable
+private fun BbCodeTextLightPreview() {
+    VndbTheme(themeId = ThemeId.SEINRKN, includeBackground = true) {
+        BbCodeText(
+            rawText = "[quote]“Look at the sky.”[/quote]\nCode sample: [code]v17[/code]",
+            modifier = Modifier.padding(12.dp)
         )
-
-        val matches = tokenRegex.findAll(working).toList()
-        if (matches.isEmpty()) {
-            val cleaned = working.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-            append(cleaned)
-            return@buildAnnotatedString
-        }
-
-        for (match in matches) {
-            if (match.range.first > idx) {
-                val plain = working.substring(idx, match.range.first)
-                    .replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                append(plain)
-            }
-
-            val tagType = match.groups[1]?.value?.lowercase()
-            val tagContent = match.groups[2]?.value
-            val urlTarget = match.groups[3]?.value
-            val urlLabel = match.groups[4]?.value
-            val bareUrl = match.groups[5]?.value
-
-            when {
-                tagType != null && tagContent != null -> {
-                    val cleanInner = tagContent.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                    val span = when (tagType) {
-                        "b" -> SpanStyle(fontWeight = FontWeight.Bold)
-                        "i" -> SpanStyle(fontStyle = FontStyle.Italic)
-                        "u" -> SpanStyle(textDecoration = TextDecoration.Underline)
-                        "s" -> SpanStyle(textDecoration = TextDecoration.LineThrough)
-                        "code" -> SpanStyle(fontFamily = FontFamily.Monospace, background = baseColor.copy(alpha = 0.15f))
-                        else -> SpanStyle()
-                    }
-                    pushStyle(span)
-                    append(cleanInner)
-                    pop()
-                }
-                urlTarget != null && urlLabel != null -> {
-                    val cleanLabel = urlLabel.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                    pushStringAnnotation(tag = "URL", annotation = urlTarget.trim())
-                    pushStyle(
-                        SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    append(cleanLabel)
-                    pop()
-                    pop()
-                }
-                bareUrl != null -> {
-                    pushStringAnnotation(tag = "URL", annotation = bareUrl.trim())
-                    pushStyle(
-                        SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    append(bareUrl.trim())
-                    pop()
-                    pop()
-                }
-            }
-            idx = match.range.last + 1
-        }
-
-        if (idx < working.length) {
-            val tail = working.substring(idx).replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-            append(tail)
-        }
     }
 }
