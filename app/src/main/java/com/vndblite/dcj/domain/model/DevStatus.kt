@@ -9,6 +9,9 @@ enum class DevStatus(val apiCode: Int) {
     IN_DEVELOPMENT(1),
     CANCELLED(2);
 
+    val apiValue: Int
+        get() = apiCode
+
     companion object {
         fun fromApiCode(code: Int?): DevStatus? =
             entries.firstOrNull { it.apiCode == code }

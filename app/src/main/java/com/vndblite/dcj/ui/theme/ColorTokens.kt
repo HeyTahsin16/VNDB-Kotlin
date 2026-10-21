@@ -39,6 +39,8 @@ data class VndbSemanticColors(
     val cardGradientEnd: Color = Color(0xEB000000),
     val cardOverlayText: Color = Color(0xFFFFFFFF),
     val cardOverlaySubtleText: Color = Color(0xE6FFFFFF),
+    val badgeNeutral: Color = Color(0xFFB0BEC5),
+    val scrimHeavy: Color = Color(0x8C000000),
     val modalScrim: Color = Color(0x99000000),
     val transparent: Color = Color(0x00000000)
 ) {
@@ -69,6 +71,11 @@ object VndbThemeTokens {
         get() = LocalVndbSemanticColors.current
 
     val themeSpec: ThemeSpec
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalThemeSpec.current
+
+    val spec: ThemeSpec
         @Composable
         @ReadOnlyComposable
         get() = LocalThemeSpec.current

@@ -166,21 +166,27 @@ Release builds enable R8 code shrinking (`isMinifyEnabled = true`) and resource 
 │       ├── main/
 │       │   ├── AndroidManifest.xml
 │       │   ├── java/com/vndblite/dcj/
-│       │   │   ├── MainActivity.kt
-│       │   │   ├── core/           # AppInfo (single-source metadata & User-Agent)
+│       │   │   ├── AppContainer.kt         # Manual constructor-injected dependency graph
+│       │   │   ├── MainActivity.kt         # Edge-to-edge Compose host & FirstLaunchGate
+│       │   │   ├── VndbApplication.kt      # Application entry point & debug StrictMode
+│       │   │   ├── core/                   # AppInfo, AppResult, ApiError, UiText, Clock, Dispatchers
 │       │   │   ├── data/
-│       │   │   │   ├── local/      # LocalStorageManager
-│       │   │   │   ├── model/      # Domain & DTO models
-│       │   │   │   └── remote/     # VndbApiService (VNDB Kana API v2 + HTML reviews)
+│       │   │   │   ├── local/              # Room AppDatabase, DAOs, DataStore, EncryptedTokenStore
+│       │   │   │   ├── remote/             # VndbApi, KanaFilter AST, DTOs, OkHttp rate limiter, Jsoup ReviewSource
+│       │   │   │   └── repository/         # VnRepositoryImpl, CollectionRepositoryImpl, SettingsRepositoryImpl
+│       │   │   ├── domain/
+│       │   │   │   ├── model/              # Pure Kotlin domain models & typed enums
+│       │   │   │   └── repository/         # Domain repository interfaces
+│       │   │   ├── sync/                   # Two-way cloud SyncPlanner & SyncEngine
 │       │   │   └── ui/
-│       │   │       ├── components/ # Reusable Compose components & NsfwAsyncImage
-│       │   │       ├── screens/    # Home, Search, Detail, Collection, Settings/About
-│       │   │       ├── theme/      # VndbTheme & Material 3 color/typography helpers
-│       │   │       └── viewmodel/  # VndbViewModel
-│       │   └── res/                # Adaptive launcher icons, backup rules, strings, themes
+│       │   │       ├── components/         # Reusable Material 3 components, BbCodeParser, NsfwAsyncImage
+│       │   │       ├── format/             # Localized DomainFormatters & ScreenFormatters
+│       │   │       ├── navigation/         # AppNavHost, AppRoutes, SearchCommandBus
+│       │   │       ├── screens/            # Home, Search, Characters, Detail, Collection, Auth, Settings, Others, About, Random
+│       │   │       └── theme/              # 11 visual novel ThemeSpecs, SemanticColors & VndbTheme
+│       │   └── res/                        # Adaptive launcher icons, backup rules, strings.xml, themes
 │       └── test/
-│           └── java/com/vndblite/dcj/
-│               └── VndbModelsTest.kt
+│           └── java/com/vndblite/dcj/      # Unit & Robolectric tests (API, Room, Sync, BBCode, ViewModels, Repositories)
 ├── assets/
 │   └── images/                     # Theme backgrounds (11), flags (35), OS icons (32), status (6), search (8), tutorial (3), icon (1), contact (1)
 ├── docs/

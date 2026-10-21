@@ -85,6 +85,21 @@ fun StatusOptionChip(
     }
 }
 
+@Composable
+fun StatusChip(
+    status: CollectionStatus,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    StatusOptionChip(
+        status = status,
+        selected = selected,
+        onClick = onClick,
+        modifier = modifier
+    )
+}
+
 /**
  * Accessible tab chip for the Collection screen's status filter bar, including an "All" option (U1, U2, U6).
  */

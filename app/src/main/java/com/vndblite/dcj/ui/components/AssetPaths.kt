@@ -13,7 +13,9 @@ object AssetPaths {
     const val ASSET_URI_PREFIX: String = "file:///android_asset/"
 
     const val APP_ICON: String = "${ASSET_URI_PREFIX}images/icon/app_icon.png"
+    const val APP_ICON_TRANSPARENT: String = APP_ICON
     const val GITHUB_ICON: String = "${ASSET_URI_PREFIX}images/contact/github.png"
+    const val GITHUB_CONTACT_ICON: String = GITHUB_ICON
     const val UNKNOWN_FLAG: String = "${ASSET_URI_PREFIX}images/flags/xx.png"
     const val OTHER_PLATFORM_ICON: String = "${ASSET_URI_PREFIX}images/os/oth.png"
 

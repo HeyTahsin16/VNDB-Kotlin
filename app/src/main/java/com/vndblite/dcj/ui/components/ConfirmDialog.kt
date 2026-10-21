@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -21,9 +22,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vndblite.dcj.R
+import com.vndblite.dcj.core.UiText
 import com.vndblite.dcj.domain.model.ThemeId
 import com.vndblite.dcj.ui.theme.VndbTheme
 import com.vndblite.dcj.ui.theme.VndbThemeTokens
+
+@Immutable
+data class ConfirmDialogSpec(
+    val title: UiText,
+    val message: UiText,
+    val confirmLabel: UiText = UiText.StringResource(R.string.dialog_confirm),
+    val dismissLabel: UiText = UiText.StringResource(R.string.dialog_cancel),
+    val isDestructive: Boolean = false,
+    val confirmTestTag: String = "confirm_dialog_confirm_button"
+)
+
+@Composable
+fun ConfirmDialog(
+    spec: ConfirmDialogSpec,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    VndbConfirmDialog(
+        title = spec.title.asString(),
+        message = spec.message.asString(),
+        confirmLabel = spec.confirmLabel.asString(),
+        dismissLabel = spec.dismissLabel.asString(),
+        isDestructive = spec.isDestructive,
+        confirmTestTag = spec.confirmTestTag,
+        onConfirm = onConfirm,
+        onDismiss = onDismiss
+    )
+}
 
 /**
  * Reusable confirmation dialog using semantic theme tokens and >= 48.dp touch targets (F9, U1, U2, U6).

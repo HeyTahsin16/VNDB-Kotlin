@@ -14,16 +14,12 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import com.vndblite.dcj.data.model.ThemeCode
 import com.vndblite.dcj.domain.model.ThemeId
-
-val LocalAppThemeCode = compositionLocalOf { ThemeCode.AGL }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -48,11 +44,6 @@ fun vndbFilterChipColors(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun vndbFilterChipColors(theme: ThemeCode): SelectableChipColors =
-    vndbFilterChipColors(spec = ThemeSpecs.forId(ThemeId.fromCode(theme.code)))
-
 @Composable
 fun vndbFilterChipBorder(
     selected: Boolean,
@@ -63,16 +54,6 @@ fun vndbFilterChipBorder(
         color = if (selected) spec.accentColor else spec.onSurfaceColor.copy(alpha = 0.50f)
     )
 }
-
-@Composable
-fun vndbFilterChipBorder(
-    selected: Boolean,
-    theme: ThemeCode
-): BorderStroke =
-    vndbFilterChipBorder(
-        selected = selected,
-        spec = ThemeSpecs.forId(ThemeId.fromCode(theme.code))
-    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,11 +71,6 @@ fun vndbInputChipColors(
         selectedTrailingIconColor = spec.onSurfaceColor
     )
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun vndbInputChipColors(theme: ThemeCode): SelectableChipColors =
-    vndbInputChipColors(spec = ThemeSpecs.forId(ThemeId.fromCode(theme.code)))
 
 @Composable
 fun vndbOutlinedTextFieldColors(
@@ -119,10 +95,6 @@ fun vndbOutlinedTextFieldColors(
     )
 }
 
-@Composable
-fun vndbOutlinedTextFieldColors(theme: ThemeCode): TextFieldColors =
-    vndbOutlinedTextFieldColors(spec = ThemeSpecs.forId(ThemeId.fromCode(theme.code)))
-
 /**
  * Primary Material 3 theme wrapper for VNDB Kotlin (R10, B7, F7, U2, A12).
  *
@@ -140,7 +112,6 @@ fun VndbTheme(
     content: @Composable () -> Unit
 ) {
     val spec = remember(themeId) { ThemeSpecs.forId(themeId) }
-    val legacyCode = remember(themeId) { ThemeCode.fromCode(themeId.code) }
     val colorScheme = remember(spec) { ThemeSpecs.buildColorScheme(spec) }
     val typography = remember(fontSizeOffset) { buildVndbTypography(fontSizeOffset) }
 
@@ -157,8 +128,7 @@ fun VndbTheme(
     CompositionLocalProvider(
         LocalThemeId provides themeId,
         LocalThemeSpec provides spec,
-        LocalVndbSemanticColors provides DefaultVndbSemanticColors,
-        LocalAppThemeCode provides legacyCode
+        LocalVndbSemanticColors provides DefaultVndbSemanticColors
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -173,21 +143,4 @@ fun VndbTheme(
             }
         }
     }
-}
-
-/**
- * Compatibility overload accepting [ThemeCode] while legacy screens remain in place before Phase 7 switch-over.
- */
-@Composable
-fun VndbTheme(
-    themeCode: ThemeCode,
-    fontSizeOffset: Float = 0f,
-    content: @Composable () -> Unit
-) {
-    VndbTheme(
-        themeId = ThemeId.fromCode(themeCode.code),
-        fontSizeOffset = fontSizeOffset,
-        includeBackground = true,
-        content = content
-    )
 }

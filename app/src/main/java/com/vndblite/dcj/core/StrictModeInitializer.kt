@@ -28,4 +28,8 @@ object StrictModeInitializer {
         )
         AppLog.d("StrictMode", "Debug StrictMode thread and VM policies enabled")
     }
+
+    fun installIfDebug(isDebugBuild: Boolean = BuildConfig.DEBUG) {
+        enableIfDebug(isDebugBuild)
+    }
 }

@@ -124,6 +124,12 @@ fun formatVnLengthUiText(
     return UiText.StringResource(lengthBucket.labelResId())
 }
 
+@Composable
+fun formatVnLength(
+    lengthMinutes: Int?,
+    lengthBucket: VnLengthBucket?
+): String = formatVnLengthUiText(lengthMinutes, lengthBucket).asString()
+
 @StringRes
 fun VnRelationType.labelResId(): Int = when (this) {
     VnRelationType.SEQUEL -> R.string.relation_seq
@@ -141,6 +147,10 @@ fun VnRelationType.labelResId(): Int = when (this) {
 
 @Composable
 fun VnRelationType.displayLabel(): String = stringResource(labelResId())
+
+@Composable
+fun VnRelationType.displayLabel(isOfficial: Boolean): String =
+    displayLabel()
 
 fun ReleaseDate?.toUiText(): UiText = when (this) {
     null -> UiText.StringResource(R.string.release_date_unknown)

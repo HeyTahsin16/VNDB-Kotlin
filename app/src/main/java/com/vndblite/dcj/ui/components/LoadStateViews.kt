@@ -53,6 +53,29 @@ sealed interface SectionUiState<out T> {
     data class Error(val message: UiText) : SectionUiState<Nothing>
 }
 
+typealias SectionLoadState<T> = SectionUiState<T>
+
+@Composable
+fun <T> SectionStateContainer(
+    state: SectionUiState<T>,
+    emptyMessage: UiText,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable (T) -> Unit
+) {
+    Box(modifier = modifier) {
+        when (state) {
+            SectionUiState.Loading -> LoadingStateView()
+            SectionUiState.Empty -> EmptyStateView(title = emptyMessage.asString())
+            is SectionUiState.Error -> InlineSectionErrorCard(
+                message = state.message,
+                onRetry = onRetry
+            )
+            is SectionUiState.Content -> content(state.data)
+        }
+    }
+}
+
 @Composable
 fun LoadingStateView(
     modifier: Modifier = Modifier,

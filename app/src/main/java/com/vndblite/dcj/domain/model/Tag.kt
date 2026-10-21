@@ -22,3 +22,5 @@ enum class GenrePreset(val tagId: String, val defaultName: String) {
 
     fun toTag(): Tag = Tag(id = tagId, name = defaultName)
 }
+
+typealias QuickGenrePreset = GenrePreset

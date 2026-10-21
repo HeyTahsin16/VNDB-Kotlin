@@ -36,58 +36,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
- * High-level stage of a synchronization run for reactive UI progress reporting without
- * hardcoded English strings in non-UI layers (Rule 4, A11, Y6).
- */
-enum class SyncStage {
-    IDLE,
-    AUTHENTICATING,
-    FETCHING_REMOTE_LIST,
-    PLANNING,
-    DELETING_REMOTE,
-    PUSHING_LOCAL_CHANGES,
-    APPLYING_LOCAL_UPDATES,
-    CACHING_SUMMARIES,
-    COMPLETED,
-    FAILED
-}
-
-/**
- * Structured progress snapshot emitted by [SyncService.progressFlow] during authentication and sync (Y6).
- */
-data class SyncProgress(
-    val stage: SyncStage = SyncStage.IDLE,
-    val isRunning: Boolean = false,
-    val completedOperations: Int = 0,
-    val totalOperations: Int = 0,
-    val currentVnId: String? = null,
-    val lastReport: SyncReport? = null,
-    val lastError: ApiError? = null
-)
-
-/**
- * Contract for account authentication, two-way userlist synchronization, and account-scoped logout (A3, Y1-Y6).
- */
-interface SyncService {
-    val progressFlow: StateFlow<SyncProgress>
-    val activeAccountFlow: Flow<UserAccount?>
-    val isAccountSyncedFlow: Flow<Boolean>
-
-    suspend fun authenticateAndSync(
-        rawToken: String,
-        onProgress: (SyncProgress) -> Unit = {}
-    ): AppResult<Pair<UserAccount, SyncReport>>
-
-    suspend fun syncCurrentAccount(
-        onProgress: (SyncProgress) -> Unit = {}
-    ): AppResult<SyncReport>
-
-    suspend fun queueLocalDeletions(vnIds: List<String>)
-
-    suspend fun logout(clearLocalCollection: Boolean)
-}
-
-/**
  * Coroutine-safe synchronization engine coordinating [VndbApi], [AppDatabase], [SettingsStore],
  * [TokenStore], and [SyncPlanner] (Section 5, N1, N7, Y1-Y6).
  */
@@ -220,17 +168,13 @@ class SyncEngine(
             return AppResult.Success(cachedAccount)
         }
         emitProgress(SyncProgress(stage = SyncStage.AUTHENTICATING, isRunning = true), onProgress)
-        val authRes = api.authenticate(token)
-        if (authRes is AppResult.Success) {
-            syncMetadataDao.upsert(
-                SyncMetadataEntity.fromUserAccount(
-                    account = authRes.data,
-                    isSynced = cachedMetadata?.isSynced ?: false,
-                    lastSyncedAtEpochSeconds = cachedMetadata?.lastSyncedAtEpochSeconds
+        return api.authenticate(token).also { authRes ->
+            if (authRes is AppResult.Success) {
+                syncMetadataDao.upsert(
+                    SyncMetadataEntity.fromUserAccount(authRes.data, cachedMetadata?.isSynced ?: false, cachedMetadata?.lastSyncedAtEpochSeconds)
                 )
-            )
+            }
         }
-        return authRes
     }
 
     private suspend fun prepareAccountSwitchIfNeeded(newAccountId: String) {
@@ -277,30 +221,19 @@ class SyncEngine(
         syncMetadataDao.upsert(
             SyncMetadataEntity.fromUserAccount(account, isSynced = failures.isEmpty(), lastSyncedAtEpochSeconds = clock.nowEpochSeconds())
         )
-        val report = SyncReport(
-            pushed = pushedCount,
-            pulled = pulledCount,
-            deletedLocal = deletedLocalCount,
-            deletedRemote = deletedRemoteCount,
-            failed = failures
-        )
+        val report = SyncReport(pushedCount, pulledCount, deletedLocalCount, deletedRemoteCount, failures)
         emitProgress(SyncProgress(SyncStage.COMPLETED, false, totalRemoteOps, totalRemoteOps, lastReport = report), onProgress)
         return AppResult.Success(report)
     }
 
-    private suspend fun buildPlanFromDatabase(
-        accountId: String,
-        remoteList: List<RemoteUserListItem>
-    ): SyncPlan {
+    private suspend fun buildPlanFromDatabase(accountId: String, remoteList: List<RemoteUserListItem>): SyncPlan {
         val nowSeconds = clock.nowEpochSeconds()
         val localRows = collectionDao.getAllEntriesIncludingPendingDelete()
-        val localPendingForAccount = localRows.filter {
+        val localPending = localRows.filter {
             it.syncState == SyncState.PENDING_DELETE.name && (it.accountId == null || it.accountId == accountId)
         }
-        if (localPendingForAccount.isNotEmpty()) {
-            pendingDeletionDao.enqueueAll(
-                localPendingForAccount.map { PendingRemoteDeletionEntity(accountId, it.vnId, nowSeconds) }
-            )
+        if (localPending.isNotEmpty()) {
+            pendingDeletionDao.enqueueAll(localPending.map { PendingRemoteDeletionEntity(accountId, it.vnId, nowSeconds) })
         }
         val queuedDeleteIds = pendingDeletionDao.getPendingForAccount(accountId).map { it.vnId }.toSet()
         return SyncPlanner.plan(

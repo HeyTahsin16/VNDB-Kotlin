@@ -47,6 +47,9 @@ data class ThemeSpec(
     val hasDarkSurface: Boolean =
         surfaceColor.copy(alpha = 1f).luminance() < WCAG_DARK_SURFACE_LUMINANCE_THRESHOLD
 
+    val backgroundAssetPath: String
+        get() = backgroundAssetUri
+
     val paletteLabel: String
         get() = if (hasDarkSurface) "Dark Palette" else "Light Palette"
 

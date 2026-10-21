@@ -8,6 +8,7 @@ enum class AndOr(val apiToken: String) {
     OR("or");
 
     fun toggle(): AndOr = if (this == AND) OR else AND
+    fun toggled(): AndOr = toggle()
 
     companion object {
         fun fromToken(token: String?): AndOr =
@@ -24,6 +25,9 @@ enum class ReleaseWindow(val storageKey: String) {
     UPCOMING("upcoming");
 
     companion object {
+        val ANY: ReleaseWindow
+            get() = ALL
+
         fun fromStorageKey(key: String?): ReleaseWindow =
             entries.firstOrNull { it.storageKey.equals(key?.trim().orEmpty(), ignoreCase = true) } ?: ALL
     }
