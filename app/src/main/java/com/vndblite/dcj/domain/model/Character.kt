@@ -6,9 +6,6 @@ enum class CharacterRole(val apiCode: String) {
     SIDE("side"),
     APPEARS("appears");
 
-    val apiValue: String
-        get() = apiCode
-
     companion object {
         fun fromApiCode(code: String?): CharacterRole {
             if (code.isNullOrBlank()) return APPEARS
@@ -22,9 +19,6 @@ enum class CharacterSex(val apiCode: String) {
     MALE("m"),
     BOTH("b"),
     SEXLESS("n");
-
-    val apiValue: String
-        get() = apiCode
 
     companion object {
         fun fromApiCode(code: String?): CharacterSex? {
@@ -75,7 +69,4 @@ data class Character(
 ) {
     val roleSummary: CharacterRole?
         get() = vns.firstOrNull()?.role
-
-    val primaryRole: CharacterRole?
-        get() = roleSummary
 }

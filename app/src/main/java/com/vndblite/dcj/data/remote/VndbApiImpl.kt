@@ -1,6 +1,7 @@
 package com.vndblite.dcj.data.remote
 
 import com.vndblite.dcj.core.ApiError
+import com.vndblite.dcj.core.AppLog
 import com.vndblite.dcj.core.AppResult
 import com.vndblite.dcj.core.Clock
 import com.vndblite.dcj.core.DefaultDispatcherProvider
@@ -14,12 +15,14 @@ import com.vndblite.dcj.data.remote.dto.KanaJson
 import com.vndblite.dcj.data.remote.dto.KanaQueryRequestDto
 import com.vndblite.dcj.data.remote.dto.ProducerDto
 import com.vndblite.dcj.data.remote.dto.QuoteDto
+import com.vndblite.dcj.data.remote.dto.ReleaseDto
 import com.vndblite.dcj.data.remote.dto.StatsDto
 import com.vndblite.dcj.data.remote.dto.TagDto
 import com.vndblite.dcj.data.remote.dto.TraitDto
 import com.vndblite.dcj.data.remote.dto.UserListItemDto
 import com.vndblite.dcj.data.remote.dto.UserListPatchPayloadBuilder
 import com.vndblite.dcj.data.remote.dto.VnDto
+import com.vndblite.dcj.data.remote.dto.summarizeReleases
 import com.vndblite.dcj.data.remote.filter.KanaFilter
 import com.vndblite.dcj.data.remote.filter.KanaFilters
 import com.vndblite.dcj.data.remote.http.HttpClientFactory
@@ -127,21 +130,126 @@ class VndbApiImpl(
 
     override suspend fun fetchVnFullDetails(vnId: String): AppResult<VnFullDetailPayload> =
         withContext(dispatchers.io) {
-            VndbApiHelpers.fetchVnFullDetails(
-                vnId = vnId,
-                executor = executor,
-                fetchSummariesByIds = ::fetchVnSummariesByIds
+            val cleanId = vnId.trim()
+            if (cleanId.isEmpty()) return@withContext AppResult.Failure(ApiError.BadRequest())
+
+            val vnReq = KanaQueryRequestDto(
+                filters = KanaFilter.eq("id", cleanId).toJsonArray(),
+                fields = KanaFieldSets.VN_EXTENDED_DETAILS,
+                results = 1,
+                page = 1
+            )
+            val vnPage = when (val res = executor.postPage("vn", vnReq, VnDto.serializer())) {
+                is AppResult.Failure -> return@withContext res
+                is AppResult.Success -> res.data
+            }
+            val vnDto = vnPage.results.firstOrNull()
+                ?: return@withContext AppResult.Failure(ApiError.NotFound())
+
+            val releasesPageResult = executor.fetchAllPages(
+                endpoint = "release",
+                baseRequest = KanaQueryRequestDto(
+                    filters = KanaFilters.forVnReleases(cleanId).toJsonArray(),
+                    fields = KanaFieldSets.RELEASE_AGE_AND_MTL,
+                    results = MAX_PAGE_SIZE
+                ),
+                itemSerializer = ReleaseDto.serializer()
+            )
+            val (mtlLangs, minAges, releasesTruncated) = when (releasesPageResult) {
+                is AppResult.Success -> {
+                    val (mtl, ages) = summarizeReleases(releasesPageResult.data.items)
+                    Triple(mtl, ages, releasesPageResult.data.hasMore)
+                }
+                is AppResult.Failure -> {
+                    AppLog.w(TAG, "Release metadata fetch failed for $cleanId: ${releasesPageResult.error}")
+                    Triple(emptyList(), emptyList(), false)
+                }
+            }
+
+            val relationIds = vnDto.relations.orEmpty().map { it.id.trim() }.filter { it.isNotEmpty() }.distinct()
+            val relatedSummariesById = if (relationIds.isNotEmpty()) {
+                when (val relSummaries = fetchVnSummariesByIds(relationIds, includeDescription = false)) {
+                    is AppResult.Success -> relSummaries.data.associateBy { it.id }
+                    is AppResult.Failure -> emptyMap()
+                }
+            } else {
+                emptyMap()
+            }
+
+            AppResult.Success(
+                VnFullDetailPayload(
+                    summary = vnDto.toSummary(),
+                    details = vnDto.toDetails(
+                        minAges = minAges,
+                        machineTranslatedLanguages = mtlLangs,
+                        relatedSummariesById = relatedSummariesById,
+                        releasesTruncated = releasesTruncated
+                    )
+                )
             )
         }
 
     override suspend fun fetchRandomVn(
         extraFilterClauses: List<KanaFilter>
     ): AppResult<VnSummary> = withContext(dispatchers.io) {
-        VndbApiHelpers.fetchRandomVn(
-            extraFilterClauses = extraFilterClauses,
-            executor = executor,
-            randomGenerator = randomGenerator
+        val baseClauses = KanaFilters.qualityRandomVnClauses(extraFilterClauses)
+        val maxIdRequest = KanaQueryRequestDto(
+            filters = KanaFilter.and(baseClauses).toJsonArray(),
+            fields = KanaFieldSets.VN_ID_ONLY,
+            sort = "id",
+            reverse = true,
+            results = 1,
+            page = 1
         )
+        val maxIdPage = when (val res = executor.postPage("vn", maxIdRequest, VnDto.serializer())) {
+            is AppResult.Failure -> return@withContext res
+            is AppResult.Success -> res.data
+        }
+        val maxVnIdNumeric = maxIdPage.results.firstOrNull()
+            ?.id
+            ?.removePrefix("v")
+            ?.toIntOrNull()
+            ?.takeIf { it >= 1 }
+            ?: return@withContext AppResult.Failure(ApiError.NotFound())
+
+        val pickedNumber = randomGenerator.nextInt(1, maxVnIdNumeric + 1)
+        val targetVnId = "v$pickedNumber"
+
+        val gteRequest = KanaQueryRequestDto(
+            filters = KanaFilter.and(baseClauses + KanaFilter.gte("id", targetVnId)).toJsonArray(),
+            fields = KanaFieldSets.VN_SUMMARY_WITH_DESCRIPTION,
+            sort = "id",
+            reverse = false,
+            results = 1,
+            page = 1
+        )
+        when (val gteRes = executor.postPage("vn", gteRequest, VnDto.serializer())) {
+            is AppResult.Failure -> gteRes
+            is AppResult.Success -> {
+                val found = gteRes.data.results.firstOrNull()
+                if (found != null) {
+                    AppResult.Success(found.toSummary())
+                } else {
+                    val lteRequest = gteRequest.copy(
+                        filters = KanaFilter.and(baseClauses + KanaFilter.lte("id", targetVnId)).toJsonArray(),
+                        reverse = true
+                    )
+                    executor.postPage("vn", lteRequest, VnDto.serializer()).let { fallbackRes ->
+                        when (fallbackRes) {
+                            is AppResult.Failure -> fallbackRes
+                            is AppResult.Success -> {
+                                val fallback = fallbackRes.data.results.firstOrNull()
+                                if (fallback != null) {
+                                    AppResult.Success(fallback.toSummary())
+                                } else {
+                                    AppResult.Failure(ApiError.NotFound())
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override suspend fun fetchCharactersForVn(vnId: String): AppResult<PaginatedList<Character>> =

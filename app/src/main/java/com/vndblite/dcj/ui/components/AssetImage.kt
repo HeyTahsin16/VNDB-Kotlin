@@ -1,74 +1,76 @@
 package com.vndblite.dcj.ui.components
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Rect
-import android.os.Build
-import androidx.annotation.VisibleForTesting
+import android.util.LruCache
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
 import coil.transform.Transformation
-import com.vndblite.dcj.domain.model.ThemeId
-import com.vndblite.dcj.ui.theme.VndbTheme
-import com.vndblite.dcj.ui.theme.VndbThemeTokens
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 
 /**
- * Single-pass downsample/upscale Coil [Transformation] used ONLY on Android API < 31
- * where hardware `RenderEffect` (`Modifier.blur`) is unavailable (U3).
+ * Bitmap-level NSFW blur transformation that works across all Android API levels (API 24-36),
+ * ensuring NSFW covers, screenshots, and character images are blurred even on devices where
+ * RenderEffect (Modifier.blur) is unavailable or subtle.
  */
-class SinglePassDownsampleBlurTransformation(
+class NsfwBlurTransformation(
     private val downsampleFactor: Int = 14
 ) : Transformation {
-
-    override val cacheKey: String = "nsfw_single_downsample_v2_$downsampleFactor"
+    override val cacheKey: String = "nsfw_blur_v1_$downsampleFactor"
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
         val w = max(1, input.width)
         val h = max(1, input.height)
         val smallW = max(4, w / downsampleFactor)
         val smallH = max(4, h / downsampleFactor)
+        val midW = max(2, smallW / 2)
+        val midH = max(2, smallH / 2)
 
-        val downsampled = Bitmap.createScaledBitmap(input, smallW, smallH, true)
+        val pass1 = Bitmap.createScaledBitmap(input, smallW, smallH, true)
+        val pass2 = Bitmap.createScaledBitmap(pass1, midW, midH, true)
+        val pass3 = Bitmap.createScaledBitmap(pass2, smallW, smallH, true)
         val output = Bitmap.createBitmap(w, h, input.config ?: Bitmap.Config.ARGB_8888)
         val canvas = Canvas(output)
         val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
-        canvas.drawBitmap(downsampled, null, Rect(0, 0, w, h), paint)
-        if (downsampled != input && !downsampled.isRecycled) {
-            downsampled.recycle()
-        }
+        canvas.drawBitmap(
+            pass3,
+            null,
+            android.graphics.Rect(0, 0, w, h),
+            paint
+        )
+        if (pass1 != input && !pass1.isRecycled) pass1.recycle()
+        if (pass2 != pass1 && !pass2.isRecycled) pass2.recycle()
+        if (pass3 != pass2 && !pass3.isRecycled) pass3.recycle()
         return output
     }
 }
 
-@VisibleForTesting
-internal fun shouldUseHardwareModifierBlur(sdkInt: Int = Build.VERSION.SDK_INT): Boolean =
-    sdkInt >= Build.VERSION_CODES.S
-
-/**
- * Displays a remote image with optional NSFW censoring using **exactly one** blur mechanism (U3):
- * - `Modifier.blur` on API >= 31 (`Build.VERSION_CODES.S`)
- * - [SinglePassDownsampleBlurTransformation] on API < 31
- * Plus a dark scrim overlay when [shouldBlur] is `true`.
- */
 @Composable
 fun NsfwAsyncImage(
     imageUrl: String,
@@ -80,60 +82,55 @@ fun NsfwAsyncImage(
     scrimAlpha: Float = 0.36f
 ) {
     val context = LocalContext.current
-    val isPreview = LocalInspectionMode.current
-    val useModifierBlur = remember { shouldUseHardwareModifierBlur() }
-    val useCoilBlurTransformation = shouldBlur && !useModifierBlur
-    val semanticColors = VndbThemeTokens.colors
-
-    val request = remember(imageUrl, useCoilBlurTransformation, context) {
+    val request = remember(imageUrl, shouldBlur, context) {
         ImageRequest.Builder(context)
             .data(imageUrl)
             .crossfade(true)
             .apply {
-                if (useCoilBlurTransformation) {
-                    transformations(SinglePassDownsampleBlurTransformation())
+                if (shouldBlur) {
+                    transformations(NsfwBlurTransformation())
                 }
             }
             .build()
     }
 
     Box(modifier = modifier) {
-        if (isPreview) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-        } else {
-            AsyncImage(
-                model = request,
-                contentDescription = contentDescription,
-                contentScale = contentScale,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (shouldBlur && useModifierBlur) {
-                            Modifier.blur(blurRadius)
-                        } else {
-                            Modifier
-                        }
-                    )
-            )
-        }
+        AsyncImage(
+            model = request,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (shouldBlur) Modifier.blur(blurRadius) else Modifier)
+        )
         if (shouldBlur && scrimAlpha > 0f) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(semanticColors.nsfwScrim.copy(alpha = scrimAlpha))
+                    .background(Color.Black.copy(alpha = scrimAlpha))
             )
         }
     }
 }
 
-/**
- * Loads a bundled asset (`file:///android_asset/...`) through Coil with size-aware decoding,
- * replacing the full-resolution `AssetBitmapCache` `LruCache` (U4).
- */
+private object AssetBitmapCache {
+    private val cache = LruCache<String, ImageBitmap>(120)
+
+    fun get(path: String): ImageBitmap? = cache.get(path)
+
+    fun loadSync(context: Context, rawPath: String): ImageBitmap? {
+        val cleanPath = rawPath.removePrefix("assets/").removePrefix("/")
+        cache.get(cleanPath)?.let { return it }
+        return runCatching {
+            context.assets.open(cleanPath).use { stream ->
+                BitmapFactory.decodeStream(stream)?.asImageBitmap()?.also { bmp ->
+                    cache.put(cleanPath, bmp)
+                }
+            }
+        }.getOrNull()
+    }
+}
+
 @Composable
 fun AssetImage(
     assetPath: String,
@@ -144,54 +141,28 @@ fun AssetImage(
     colorFilter: ColorFilter? = null
 ) {
     val context = LocalContext.current
-    val isPreview = LocalInspectionMode.current
-    val assetUri = remember(assetPath) { AssetPaths.toCoilAssetUri(assetPath) }
+    val cleanPath = remember(assetPath) { assetPath.removePrefix("assets/").removePrefix("/") }
+    var bitmap by remember(cleanPath) { mutableStateOf(AssetBitmapCache.get(cleanPath)) }
 
-    if (isPreview) {
-        Box(
-            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha))
-        )
-        return
+    LaunchedEffect(cleanPath) {
+        if (bitmap == null) {
+            bitmap = withContext(Dispatchers.IO) {
+                AssetBitmapCache.loadSync(context, cleanPath)
+            }
+        }
     }
 
-    val request = remember(assetUri, context) {
-        ImageRequest.Builder(context)
-            .data(assetUri)
-            .crossfade(false)
-            .build()
-    }
-
-    AsyncImage(
-        model = request,
-        contentDescription = contentDescription,
-        modifier = modifier,
-        contentScale = contentScale,
-        alpha = alpha,
-        colorFilter = colorFilter
-    )
-}
-
-@Preview(name = "NsfwAsyncImage Blurred - Dark Theme", showBackground = true)
-@Composable
-private fun NsfwAsyncImageBlurredPreview() {
-    VndbTheme(themeId = ThemeId.AGL) {
-        NsfwAsyncImage(
-            imageUrl = "https://t.vndb.org/cv/00/17.jpg",
-            contentDescription = null,
-            shouldBlur = true,
-            modifier = Modifier.size(width = 120.dp, height = 170.dp)
+    val currentBmp = bitmap
+    if (currentBmp != null) {
+        Image(
+            bitmap = currentBmp,
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = contentScale,
+            alpha = alpha,
+            colorFilter = colorFilter
         )
-    }
-}
-
-@Preview(name = "AssetImage - Light Theme", showBackground = true)
-@Composable
-private fun AssetImagePreview() {
-    VndbTheme(themeId = ThemeId.AIR) {
-        AssetImage(
-            assetPath = AssetPaths.APP_ICON,
-            contentDescription = null,
-            modifier = Modifier.size(48.dp)
-        )
+    } else {
+        Box(modifier = modifier)
     }
 }

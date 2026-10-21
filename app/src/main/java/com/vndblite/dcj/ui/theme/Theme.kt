@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.InputChipDefaults
@@ -11,15 +13,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import com.vndblite.dcj.domain.model.ThemeId
+import com.vndblite.dcj.data.model.ThemeCode
+import com.vndblite.dcj.ui.components.AssetImage
+
+val LocalAppThemeCode = compositionLocalOf { ThemeCode.AGL }
+val LocalFontScaleOffset = compositionLocalOf { 0f }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
@@ -29,116 +45,197 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun vndbFilterChipColors(
-    spec: ThemeSpec = LocalThemeSpec.current
-): SelectableChipColors {
-    val semantic = LocalVndbSemanticColors.current
+fun vndbFilterChipColors(theme: ThemeCode = LocalAppThemeCode.current): SelectableChipColors {
     return FilterChipDefaults.filterChipColors(
-        containerColor = spec.onSurfaceColor.copy(alpha = 0.12f),
-        labelColor = spec.onSurfaceColor,
-        iconColor = spec.accentColor,
-        selectedContainerColor = spec.accentColor,
-        selectedLabelColor = semantic.onAccentButton,
-        selectedLeadingIconColor = semantic.onAccentButton,
-        selectedTrailingIconColor = semantic.onAccentButton
+        containerColor = theme.tertiary.copy(alpha = 0.12f),
+        labelColor = theme.tertiary,
+        iconColor = theme.secondary,
+        selectedContainerColor = theme.secondary,
+        selectedLabelColor = Color.Black,
+        selectedLeadingIconColor = Color.Black,
+        selectedTrailingIconColor = Color.Black
     )
 }
 
 @Composable
 fun vndbFilterChipBorder(
     selected: Boolean,
-    spec: ThemeSpec = LocalThemeSpec.current
+    theme: ThemeCode = LocalAppThemeCode.current
 ): BorderStroke {
     return BorderStroke(
         width = 1.dp,
-        color = if (selected) spec.accentColor else spec.onSurfaceColor.copy(alpha = 0.50f)
+        color = if (selected) theme.secondary else theme.tertiary.copy(alpha = 0.50f)
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun vndbInputChipColors(
-    spec: ThemeSpec = LocalThemeSpec.current
-): SelectableChipColors {
+fun vndbInputChipColors(theme: ThemeCode = LocalAppThemeCode.current): SelectableChipColors {
     return InputChipDefaults.inputChipColors(
-        containerColor = spec.onSurfaceColor.copy(alpha = 0.14f),
-        labelColor = spec.onSurfaceColor,
-        leadingIconColor = spec.accentColor,
-        trailingIconColor = spec.onSurfaceColor,
-        selectedContainerColor = spec.accentColor.copy(alpha = 0.28f),
-        selectedLabelColor = spec.onSurfaceColor,
-        selectedLeadingIconColor = spec.accentColor,
-        selectedTrailingIconColor = spec.onSurfaceColor
+        containerColor = theme.tertiary.copy(alpha = 0.14f),
+        labelColor = theme.tertiary,
+        leadingIconColor = theme.secondary,
+        trailingIconColor = theme.tertiary,
+        selectedContainerColor = theme.secondary.copy(alpha = 0.28f),
+        selectedLabelColor = theme.tertiary,
+        selectedLeadingIconColor = theme.secondary,
+        selectedTrailingIconColor = theme.tertiary
     )
 }
 
 @Composable
-fun vndbOutlinedTextFieldColors(
-    spec: ThemeSpec = LocalThemeSpec.current
-): TextFieldColors {
+fun vndbOutlinedTextFieldColors(theme: ThemeCode = LocalAppThemeCode.current): TextFieldColors {
     return OutlinedTextFieldDefaults.colors(
-        focusedTextColor = spec.onSurfaceColor,
-        unfocusedTextColor = spec.onSurfaceColor,
-        focusedContainerColor = spec.onSurfaceColor.copy(alpha = 0.12f),
-        unfocusedContainerColor = spec.onSurfaceColor.copy(alpha = 0.08f),
-        cursorColor = spec.accentColor,
-        focusedBorderColor = spec.accentColor,
-        unfocusedBorderColor = spec.onSurfaceColor.copy(alpha = 0.55f),
-        focusedLabelColor = spec.accentColor,
-        unfocusedLabelColor = spec.onSurfaceColor.copy(alpha = 0.88f),
-        focusedPlaceholderColor = spec.onSurfaceColor.copy(alpha = 0.68f),
-        unfocusedPlaceholderColor = spec.onSurfaceColor.copy(alpha = 0.68f),
-        focusedLeadingIconColor = spec.accentColor,
-        unfocusedLeadingIconColor = spec.accentColor,
-        focusedTrailingIconColor = spec.onSurfaceColor,
-        unfocusedTrailingIconColor = spec.onSurfaceColor
+        focusedTextColor = theme.tertiary,
+        unfocusedTextColor = theme.tertiary,
+        focusedContainerColor = theme.tertiary.copy(alpha = 0.12f),
+        unfocusedContainerColor = theme.tertiary.copy(alpha = 0.08f),
+        cursorColor = theme.secondary,
+        focusedBorderColor = theme.secondary,
+        unfocusedBorderColor = theme.tertiary.copy(alpha = 0.55f),
+        focusedLabelColor = theme.secondary,
+        unfocusedLabelColor = theme.tertiary.copy(alpha = 0.88f),
+        focusedPlaceholderColor = theme.tertiary.copy(alpha = 0.68f),
+        unfocusedPlaceholderColor = theme.tertiary.copy(alpha = 0.68f),
+        focusedLeadingIconColor = theme.secondary,
+        unfocusedLeadingIconColor = theme.secondary,
+        focusedTrailingIconColor = theme.tertiary,
+        unfocusedTrailingIconColor = theme.tertiary
     )
 }
 
-/**
- * Primary Material 3 theme wrapper for VNDB Kotlin (R10, B7, F7, U2, A12).
- *
- * - Uses the single [ThemeSpecs.buildColorScheme] builder and 15-style [buildVndbTypography].
- * - Updates status and navigation bar icon appearance dynamically from [ThemeSpec.hasDarkSurface] (B7).
- * - Provides semantic color tokens via [LocalVndbSemanticColors].
- * - Does not draw the background image directly unless [includeBackground] is requested;
- *   screens and the app shell use the separate [AppBackground] composable (U2).
- */
 @Composable
 fun VndbTheme(
-    themeId: ThemeId = ThemeId.DEFAULT,
+    themeCode: ThemeCode,
     fontSizeOffset: Float = 0f,
-    includeBackground: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val spec = remember(themeId) { ThemeSpecs.forId(themeId) }
-    val colorScheme = remember(spec) { ThemeSpecs.buildColorScheme(spec) }
-    val typography = remember(fontSizeOffset) { buildVndbTypography(fontSizeOffset) }
+    val isDarkSurface = themeCode.hasDarkSurface
 
     val view = LocalView.current
     if (!LocalInspectionMode.current && !view.isInEditMode) {
         SideEffect {
             val window = view.context.findActivity()?.window ?: return@SideEffect
             val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = !spec.hasDarkSurface
-            insetsController.isAppearanceLightNavigationBars = !spec.hasDarkSurface
+            insetsController.isAppearanceLightStatusBars = !isDarkSurface
+            insetsController.isAppearanceLightNavigationBars = !isDarkSurface
         }
     }
 
+    val colorScheme = if (isDarkSurface) {
+        darkColorScheme(
+            primary = themeCode.secondary,
+            onPrimary = Color.Black,
+            primaryContainer = themeCode.secondary.copy(alpha = 0.25f),
+            onPrimaryContainer = themeCode.tertiary,
+            secondary = themeCode.secondary,
+            onSecondary = Color.Black,
+            secondaryContainer = themeCode.secondary,
+            onSecondaryContainer = Color.Black,
+            tertiary = themeCode.tertiary,
+            onTertiary = themeCode.primary,
+            background = themeCode.primary,
+            onBackground = themeCode.tertiary,
+            surface = themeCode.primary,
+            onSurface = themeCode.tertiary,
+            surfaceVariant = themeCode.tertiary.copy(alpha = 0.14f),
+            onSurfaceVariant = themeCode.tertiary.copy(alpha = 0.90f),
+            outline = themeCode.tertiary.copy(alpha = 0.55f),
+            outlineVariant = themeCode.tertiary.copy(alpha = 0.30f),
+            surfaceContainerLowest = themeCode.primary,
+            surfaceContainerLow = themeCode.primary,
+            surfaceContainer = themeCode.primary,
+            surfaceContainerHigh = themeCode.primary,
+            surfaceContainerHighest = themeCode.primary
+        )
+    } else {
+        lightColorScheme(
+            primary = themeCode.secondary,
+            onPrimary = Color.Black,
+            primaryContainer = themeCode.secondary.copy(alpha = 0.25f),
+            onPrimaryContainer = themeCode.tertiary,
+            secondary = themeCode.secondary,
+            onSecondary = Color.Black,
+            secondaryContainer = themeCode.secondary,
+            onSecondaryContainer = Color.Black,
+            tertiary = themeCode.tertiary,
+            onTertiary = themeCode.primary,
+            background = themeCode.primary,
+            onBackground = themeCode.tertiary,
+            surface = themeCode.primary,
+            onSurface = themeCode.tertiary,
+            surfaceVariant = themeCode.tertiary.copy(alpha = 0.12f),
+            onSurfaceVariant = themeCode.tertiary.copy(alpha = 0.88f),
+            outline = themeCode.tertiary.copy(alpha = 0.55f),
+            outlineVariant = themeCode.tertiary.copy(alpha = 0.30f),
+            surfaceContainerLowest = themeCode.primary,
+            surfaceContainerLow = themeCode.primary,
+            surfaceContainer = themeCode.primary,
+            surfaceContainerHigh = themeCode.primary,
+            surfaceContainerHighest = themeCode.primary
+        )
+    }
+
+    val delta = fontSizeOffset
+    val typography = Typography(
+        headlineMedium = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Bold,
+            fontSize = (22f + delta).sp
+        ),
+        titleLarge = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Bold,
+            fontSize = (18f + delta).sp
+        ),
+        titleMedium = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = (15f + delta).sp
+        ),
+        bodyLarge = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Normal,
+            fontSize = (14f + delta).sp
+        ),
+        bodyMedium = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Normal,
+            fontSize = (13f + delta).sp
+        ),
+        labelLarge = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = (13f + delta).sp
+        ),
+        labelMedium = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Medium,
+            fontSize = (11.5f + delta).sp
+        ),
+        labelSmall = TextStyle(
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Medium,
+            fontSize = (10f + delta).sp
+        )
+    )
+
     CompositionLocalProvider(
-        LocalThemeId provides themeId,
-        LocalThemeSpec provides spec,
-        LocalVndbSemanticColors provides DefaultVndbSemanticColors
+        LocalAppThemeCode provides themeCode,
+        LocalFontScaleOffset provides fontSizeOffset
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = typography
         ) {
-            if (includeBackground) {
-                AppBackground(themeId = themeId) {
-                    content()
-                }
-            } else {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AssetImage(
+                    assetPath = themeCode.backgroundImgPath,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    alpha = 0.88f
+                )
                 content()
             }
         }

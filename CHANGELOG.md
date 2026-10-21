@@ -11,25 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Modular Clean Architecture & MVVM layer separation (`core`, `domain`, `data/local`, `data/remote`, `data/repository`, `sync`, `ui/screens`, `ui/components`, `ui/format`, `ui/navigation`, `ui/theme`) with constructor-injected `AppContainer`.
-- Relational Room database (`AppDatabase`) with idempotent legacy SharedPreferences migration, Preferences DataStore settings, and Android Keystore AES-GCM `EncryptedTokenStore`.
-- Pure `SyncPlanner` and transactional `SyncEngine` with explicit `SyncState` (`NEW`, `SYNCED`, `DIRTY`, `PENDING_DELETE`) and partial-failure recovery (`SyncReport`).
-- Comprehensive unit and Robolectric test suite covering Kana filter AST serialization, DTO mappers, review HTML scraping, Room DAOs, legacy migration, sync planning/execution, BBCode parsing, WCAG theme contrast, domain/screen formatters, navigation command bus, repositories, and screen ViewModels.
 - Repository hygiene, contributor guidelines (`CONTRIBUTING.md`), GitHub issue and pull request templates, `.editorconfig`, and `.gitattributes`.
 - Credits & Attribution section in both `README.md` and the in-app **About** screen acknowledging `vndb-lite` by Daniel C.J. and the [VNDB.org Data License](https://vndb.org/d17#4).
 - Single-source application metadata (`AppInfo`) for app name, version, license (`Apache-2.0`), repository links, and an honest `User-Agent` header (`VNDBKotlin/<versionName> (+https://github.com/HeyTahsin16/VNDB-Kotlin)`).
 
 ### Changed
 
-- Split the monolithic ViewModel into dedicated, lifecycle-aware screen ViewModels (`HomeViewModel`, `SearchViewModel`, `CharacterSearchViewModel`, `VnDetailViewModel`, `CollectionViewModel`, `AuthViewModel`, `SettingsViewModel`, `RandomVnViewModel`) with `SavedStateHandle` process-death restoration and debounced `collectLatest` search pipelines.
-- Decomposed all Kotlin source files to stay strictly under 400 lines with focused, single-responsibility composable sections and helper modules.
 - Unified all internal and user-facing product naming to **VNDB Kotlin** (`VndbApp`, `VndbTheme`, `Theme.VndbKotlin`).
 - Enabled NSFW/suggestive image blur (`showCoverCensor = true`) by default across visual novel covers, screenshots, character portraits, and quote thumbnails with tap-to-reveal badges.
 - Moved the inherited Flutter release history to `docs/UPSTREAM-FLUTTER-CHANGELOG.md`.
 
 ### Removed
 
-- Monolithic `VndbViewModel`, `LocalStorageManager`, and `VndbApiService` god-classes.
 - Unused Secrets Gradle Plugin configuration, legacy Flutter `bump.py` script, upstream funding/redirect files, and unused bundled font/splash/contact assets.
 
 ## [3.6.0] - 2025-08-18

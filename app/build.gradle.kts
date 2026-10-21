@@ -63,32 +63,36 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = if (hasReleaseSigning) resolvedReleaseKeystoreFile else file("${rootDir}/debug.keystore")
-            storePassword = if (hasReleaseSigning) releaseStorePassword else "android"
-            keyAlias = if (hasReleaseSigning) releaseKeyAlias else "androiddebugkey"
-            keyPassword = if (hasReleaseSigning) releaseKeyPassword else "android"
-        }
-        create("debugConfig") {
-            storeFile = file("${rootDir}/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = resolvedReleaseKeystoreFile
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("debugConfig")
+            // Uses AGP's default debug signing configuration (B2)
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = null
+                logger.lifecycle(
+                    "WARNING: Release signing is not configured (no keystore.properties or KEYSTORE_* env vars found). " +
+                        "Release artifacts will be unsigned."
+                )
+            }
         }
     }
 
@@ -105,7 +109,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.srcDirs("src/main/assets", "../assets")
+            assets.directories.add("../assets")
         }
     }
 
