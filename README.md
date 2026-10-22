@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/images/icon/app_icon.png" alt="VNDB Kotlin App Icon" width="110" />
+<img src="app/src/main/assets/images/icon/app_icon.png" alt="VNDB Kotlin App Icon" width="110" />
 
 # VNDB Kotlin
 

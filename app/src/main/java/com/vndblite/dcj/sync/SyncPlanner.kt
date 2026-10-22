@@ -88,7 +88,9 @@ data class SyncPlanInput(
     val remoteItems: List<RemoteUserListItem>,
     val pendingRemoteDeleteIds: Set<String> = emptySet(),
     /** Optional mapping of `vnId -> owning accountId` from local storage for account-switch safety (Y6). */
-    val entryAccountIds: Map<String, String?> = emptyMap()
+    val entryAccountIds: Map<String, String?> = emptyMap(),
+    /** True when the remote `/ulist` pagination hit the page cap and `hasMore` remained true. */
+    val isRemoteListTruncated: Boolean = false
 )
 
 /**
@@ -125,7 +127,8 @@ data class SyncPlan(
  * 1. **Pending Remote Delete (`vnId in pendingRemoteDeleteIds` or local `PENDING_DELETE` for active account):**
  *    -> [SyncPlanAction.DeleteRemote]. Never re-imported from `remoteItems` during the same run (Y4).
  * 2. **Remote Missing + Local `CLEAN` (for active account):**
- *    -> [SyncPlanAction.DeleteLocal] (deleted on `vndb.org`, Y5).
+ *    -> [SyncPlanAction.DeleteLocal] (deleted on `vndb.org`, Y5), UNLESS [SyncPlanInput.isRemoteListTruncated] is true,
+ *       in which case local deletions are refused ([SyncPlanAction.NoOp]) so truncated pages never wipe local entries.
  * 3. **Remote Missing + Local `NEW` or `DIRTY`:**
  *    -> [SyncPlanAction.PushToRemote] (created/updated locally, Y5).
  * 4. **Local Missing + Remote Present (and not queued for deletion):**
@@ -155,7 +158,8 @@ object SyncPlanner {
                 rawLocal = localById[vnId],
                 ownerAccountId = input.entryAccountIds[vnId],
                 isQueuedForRemoteDelete = vnId in input.pendingRemoteDeleteIds,
-                remote = remoteById[vnId]
+                remote = remoteById[vnId],
+                isRemoteListTruncated = input.isRemoteListTruncated
             )
         }
         return SyncPlan(accountId = cleanAccountId, actions = actions)
@@ -167,7 +171,8 @@ object SyncPlanner {
         rawLocal: CollectionEntry?,
         ownerAccountId: String?,
         isQueuedForRemoteDelete: Boolean,
-        remote: RemoteUserListItem?
+        remote: RemoteUserListItem?,
+        isRemoteListTruncated: Boolean
     ): SyncPlanAction {
         val belongsToDifferentAccount = ownerAccountId != null && ownerAccountId != accountId
         if (isQueuedForRemoteDelete) {
@@ -195,7 +200,7 @@ object SyncPlanner {
 
         val local = rawLocal?.let { normalizeForAccount(it, belongsToDifferentAccount) }
         return when {
-            local != null && remote == null -> planLocalOnly(local)
+            local != null && remote == null -> planLocalOnly(local, isRemoteListTruncated)
             local == null && remote != null -> SyncPlanAction.PullFromRemote(
                 vnId = vnId,
                 remoteItem = remote,
@@ -227,12 +232,19 @@ object SyncPlanner {
         )
     }
 
-    private fun planLocalOnly(local: CollectionEntry): SyncPlanAction {
+    private fun planLocalOnly(
+        local: CollectionEntry,
+        isRemoteListTruncated: Boolean
+    ): SyncPlanAction {
         return when (local.syncState) {
-            SyncState.CLEAN -> SyncPlanAction.DeleteLocal(
-                vnId = local.vnId,
-                reason = LocalDeletionReason.DELETED_ON_REMOTE
-            )
+            SyncState.CLEAN -> if (isRemoteListTruncated) {
+                SyncPlanAction.NoOp(local.vnId)
+            } else {
+                SyncPlanAction.DeleteLocal(
+                    vnId = local.vnId,
+                    reason = LocalDeletionReason.DELETED_ON_REMOTE
+                )
+            }
             SyncState.NEW,
             SyncState.DIRTY -> SyncPlanAction.PushToRemote(
                 vnId = local.vnId,

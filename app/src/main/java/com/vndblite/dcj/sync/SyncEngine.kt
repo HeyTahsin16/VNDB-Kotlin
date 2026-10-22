@@ -126,50 +126,58 @@ class SyncEngine(
         rawToken: String,
         onProgress: (SyncProgress) -> Unit
     ): AppResult<Pair<UserAccount, SyncReport>> = withContext(dispatchers.io) {
-        syncMutex.withLock {
-            try {
-                emitProgress(SyncProgress(stage = SyncStage.AUTHENTICATING, isRunning = true), onProgress)
-                val cleanToken = rawToken.trim()
-                if (cleanToken.isEmpty()) return@withLock failSync(ApiError.Unauthorized, onProgress)
+        if (!syncMutex.tryLock()) {
+            AppLog.w(TAG, "Overlapping authenticateAndSync call rejected because a sync is already running")
+            return@withContext AppResult.Failure(ApiError.SyncInProgress)
+        }
+        try {
+            emitProgress(SyncProgress(stage = SyncStage.AUTHENTICATING, isRunning = true), onProgress)
+            val cleanToken = rawToken.trim()
+            if (cleanToken.isEmpty()) return@withContext failSync(ApiError.Unauthorized, onProgress)
 
-                val account = when (val authRes = api.authenticate(cleanToken)) {
-                    is AppResult.Failure -> return@withLock failSync(authRes.error, onProgress)
-                    is AppResult.Success -> authRes.data
-                }
-
-                prepareAccountSwitchIfNeeded(newAccountId = account.id)
-                tokenStore.saveToken(accountId = account.id, token = cleanToken)
-                syncMetadataDao.upsert(SyncMetadataEntity.fromUserAccount(account, isSynced = false, lastSyncedAtEpochSeconds = null))
-                settingsStore.setActiveAccountId(account.id)
-
-                when (val syncResult = executeSyncLocked(account, cleanToken, onProgress)) {
-                    is AppResult.Failure -> AppResult.Failure(syncResult.error)
-                    is AppResult.Success -> AppResult.Success(account to syncResult.data)
-                }
-            } finally {
-                ensureNotRunningFlag()
+            val account = when (val authRes = api.authenticate(cleanToken)) {
+                is AppResult.Failure -> return@withContext failSync(authRes.error, onProgress)
+                is AppResult.Success -> authRes.data
             }
+
+            prepareAccountSwitchIfNeeded(newAccountId = account.id)
+            tokenStore.saveToken(accountId = account.id, token = cleanToken)
+            syncMetadataDao.upsert(
+                SyncMetadataEntity.fromUserAccount(account, isSynced = false, lastSyncedAtEpochSeconds = null)
+            )
+            settingsStore.setActiveAccountId(account.id)
+
+            when (val syncResult = executeSyncLocked(account, cleanToken, onProgress)) {
+                is AppResult.Failure -> AppResult.Failure(syncResult.error)
+                is AppResult.Success -> AppResult.Success(account to syncResult.data)
+            }
+        } finally {
+            ensureNotRunningFlag()
+            syncMutex.unlock()
         }
     }
 
     override suspend fun syncCurrentAccount(
         onProgress: (SyncProgress) -> Unit
     ): AppResult<SyncReport> = withContext(dispatchers.io) {
-        syncMutex.withLock {
-            try {
-                val accountId = settingsStore.getActiveAccountId()?.trim()?.takeIf { it.isNotEmpty() }
-                    ?: return@withLock failSync(ApiError.Unauthorized, onProgress)
-                val token = tokenStore.getToken(accountId)?.trim()?.takeIf { it.isNotEmpty() }
-                    ?: return@withLock failSync(ApiError.Unauthorized, onProgress)
+        if (!syncMutex.tryLock()) {
+            AppLog.w(TAG, "Overlapping syncCurrentAccount call rejected because a sync is already running")
+            return@withContext AppResult.Failure(ApiError.SyncInProgress)
+        }
+        try {
+            val accountId = settingsStore.getActiveAccountId()?.trim()?.takeIf { it.isNotEmpty() }
+                ?: return@withContext failSync(ApiError.Unauthorized, onProgress)
+            val token = tokenStore.getToken(accountId)?.trim()?.takeIf { it.isNotEmpty() }
+                ?: return@withContext failSync(ApiError.Unauthorized, onProgress)
 
-                val account = when (val resolved = resolveVerifiedAccount(accountId, token, onProgress)) {
-                    is AppResult.Failure -> return@withLock failSync(resolved.error, onProgress)
-                    is AppResult.Success -> resolved.data
-                }
-                executeSyncLocked(account, token, onProgress)
-            } finally {
-                ensureNotRunningFlag()
+            val account = when (val resolved = resolveVerifiedAccount(accountId, token, onProgress)) {
+                is AppResult.Failure -> return@withContext failSync(resolved.error, onProgress)
+                is AppResult.Success -> resolved.data
             }
+            executeSyncLocked(account, token, onProgress)
+        } finally {
+            ensureNotRunningFlag()
+            syncMutex.unlock()
         }
     }
 
@@ -252,14 +260,27 @@ class SyncEngine(
     ): AppResult<SyncReport> {
         coroutineContext.ensureActive()
         emitProgress(SyncProgress(stage = SyncStage.FETCHING_REMOTE_LIST, isRunning = true), onProgress)
-        val remoteList = when (val remoteRes = api.fetchUserList(userId = account.id, token = token)) {
+        val remotePage = when (val remoteRes = api.fetchUserList(userId = account.id, token = token)) {
             is AppResult.Failure -> return failSync(remoteRes.error, onProgress)
             is AppResult.Success -> remoteRes.data
+        }
+        val remoteList = remotePage.items
+        val isTruncated = remotePage.hasMore
+        if (isTruncated) {
+            AppLog.w(
+                TAG,
+                "Remote userlist for account=${account.id} reached page cap (${remotePage.page} pages); " +
+                    "refusing to plan local deletions from truncated remote list"
+            )
         }
 
         coroutineContext.ensureActive()
         emitProgress(SyncProgress(stage = SyncStage.PLANNING, isRunning = true), onProgress)
-        val plan = buildPlanFromDatabase(account.id, remoteList)
+        val plan = buildPlanFromDatabase(
+            accountId = account.id,
+            remoteList = remoteList,
+            isRemoteListTruncated = isTruncated
+        )
         val totalRemoteOps = plan.remoteDeletions.size + plan.remotePushes.size
         val failures = mutableListOf<SyncFailure>()
 
@@ -268,7 +289,7 @@ class SyncEngine(
 
         coroutineContext.ensureActive()
         emitProgress(SyncProgress(SyncStage.APPLYING_LOCAL_UPDATES, true, totalRemoteOps, totalRemoteOps), onProgress)
-        val (pulledCount, deletedLocalCount) = applyLocalPlanChanges(account.id, plan)
+        val (pulledCount, deletedLocalCount) = applyLocalPlanChanges(account.id, plan, isRemoteListTruncated = isTruncated)
 
         coroutineContext.ensureActive()
         emitProgress(SyncProgress(SyncStage.CACHING_SUMMARIES, true, totalRemoteOps, totalRemoteOps), onProgress)
@@ -290,7 +311,8 @@ class SyncEngine(
 
     private suspend fun buildPlanFromDatabase(
         accountId: String,
-        remoteList: List<RemoteUserListItem>
+        remoteList: List<RemoteUserListItem>,
+        isRemoteListTruncated: Boolean
     ): SyncPlan {
         val nowSeconds = clock.nowEpochSeconds()
         val localRows = collectionDao.getAllEntriesIncludingPendingDelete()
@@ -309,7 +331,8 @@ class SyncEngine(
                 localEntries = localRows.map { it.toDomain() },
                 remoteItems = remoteList,
                 pendingRemoteDeleteIds = queuedDeleteIds,
-                entryAccountIds = localRows.associate { it.vnId to it.accountId }
+                entryAccountIds = localRows.associate { it.vnId to it.accountId },
+                isRemoteListTruncated = isRemoteListTruncated
             )
         )
     }
@@ -376,14 +399,20 @@ class SyncEngine(
 
     private suspend fun applyLocalPlanChanges(
         accountId: String,
-        plan: SyncPlan
+        plan: SyncPlan,
+        isRemoteListTruncated: Boolean = false
     ): Pair<Int, Int> {
         var pulledCount = 0
         var deletedLocalCount = 0
+        val safeLocalDeletions = if (isRemoteListTruncated) {
+            plan.localDeletions.filter { it.reason != LocalDeletionReason.DELETED_ON_REMOTE }
+        } else {
+            plan.localDeletions
+        }
         database.withTransaction {
-            if (plan.localDeletions.isNotEmpty()) {
-                collectionDao.deleteEntriesHard(plan.localDeletions.map { it.vnId })
-                deletedLocalCount = plan.localDeletions.count { it.countInReport }
+            if (safeLocalDeletions.isNotEmpty()) {
+                collectionDao.deleteEntriesHard(safeLocalDeletions.map { it.vnId })
+                deletedLocalCount = safeLocalDeletions.count { it.countInReport }
             }
             if (plan.localPulls.isNotEmpty()) {
                 collectionDao.upsertEntries(

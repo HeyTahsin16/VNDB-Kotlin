@@ -39,6 +39,62 @@ jobs:
       - name: Run Android Lint, Unit Tests, and Assemble Debug APK
         run: ./gradlew lintDebug testDebugUnitTest assembleDebug --stacktrace
 
+      - name: Verify Bundled Assets in Debug APK
+        run: |
+          set -euo pipefail
+          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::Debug APK not found at $APK_PATH"
+            exit 1
+          fi
+          if [ -d "app/src/main/assets/images" ]; then
+            ASSET_ROOT="app/src/main/assets/images"
+          elif [ -d "assets/images" ]; then
+            ASSET_ROOT="assets/images"
+          else
+            echo "::error::Neither app/src/main/assets/images nor assets/images exists in workspace"
+            exit 1
+          fi
+          DISK_COUNT=$(find "$ASSET_ROOT" -type f | wc -l | tr -d ' ')
+          UNZIP_DIR="${RUNNER_TEMP}/apk_assets_check"
+          rm -rf "$UNZIP_DIR"
+          mkdir -p "$UNZIP_DIR"
+          unzip -q "$APK_PATH" "assets/images/*" -d "$UNZIP_DIR" || true
+          APK_IMAGES_DIR="$UNZIP_DIR/assets/images"
+          if [ ! -d "$APK_IMAGES_DIR" ]; then
+            echo "::error::No assets/images/ directory found inside $APK_PATH"
+            exit 1
+          fi
+          APK_COUNT=$(find "$APK_IMAGES_DIR" -type f | wc -l | tr -d ' ')
+          BG_COUNT=$(find "$APK_IMAGES_DIR/bg" -type f 2>/dev/null | wc -l | tr -d ' ')
+          FLAGS_COUNT=$(find "$APK_IMAGES_DIR/flags" -type f 2>/dev/null | wc -l | tr -d ' ')
+          OS_COUNT=$(find "$APK_IMAGES_DIR/os" -type f 2>/dev/null | wc -l | tr -d ' ')
+          STATUS_COUNT=$(find "$APK_IMAGES_DIR/status" -type f 2>/dev/null | wc -l | tr -d ' ')
+          SEARCH_COUNT=$(find "$APK_IMAGES_DIR/search" -type f 2>/dev/null | wc -l | tr -d ' ')
+          {
+            echo "### APK Bundled Assets Verification"
+            echo ""
+            echo "| Category | Count in APK |"
+            echo "| :--- | ---: |"
+            echo "| Total (\`assets/images/\`) | $APK_COUNT (expected $DISK_COUNT) |"
+            echo "| \`bg\` | $BG_COUNT |"
+            echo "| \`flags\` | $FLAGS_COUNT |"
+            echo "| \`os\` | $OS_COUNT |"
+            echo "| \`status\` | $STATUS_COUNT |"
+            echo "| \`search\` | $SEARCH_COUNT |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$APK_COUNT" -ne "$DISK_COUNT" ]; then
+            echo "::error::APK asset count ($APK_COUNT) does not match source asset folder count ($DISK_COUNT)"
+            exit 1
+          fi
+          for SUBDIR in bg flags os status search; do
+            SUB_COUNT=$(find "$APK_IMAGES_DIR/$SUBDIR" -type f 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$SUB_COUNT" -le 0 ]; then
+              echo "::error::Required asset subdirectory assets/images/$SUBDIR is empty or missing in APK"
+              exit 1
+            fi
+          done
+
       - name: Upload Android Lint Report
         if: always()
         uses: actions/upload-artifact@v4

@@ -7,7 +7,6 @@ import com.vndblite.dcj.core.AppResult
 import com.vndblite.dcj.core.DefaultDispatcherProvider
 import com.vndblite.dcj.core.DispatcherProvider
 import com.vndblite.dcj.core.runSuspendCatching
-import com.vndblite.dcj.data.remote.http.HttpClientFactory
 import com.vndblite.dcj.data.remote.http.RateLimiter
 import com.vndblite.dcj.data.remote.http.await
 import com.vndblite.dcj.data.remote.http.mapHttpStatusToApiError
@@ -31,8 +30,8 @@ import org.jsoup.nodes.TextNode
  * and structural markup validation so broken HTML surfaces as [ApiError.Parse] instead of silent emptiness (N2, N5, R10).
  */
 class JsoupReviewSource(
-    private val httpClient: OkHttpClient = HttpClientFactory.create(),
-    private val rateLimiter: RateLimiter = RateLimiter(),
+    private val httpClient: OkHttpClient,
+    private val rateLimiter: RateLimiter,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider,
     private val baseWebUrl: String = AppInfo.VNDB_URL,
     private val maxPages: Int = DEFAULT_MAX_PAGES

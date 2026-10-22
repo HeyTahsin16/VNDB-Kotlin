@@ -14,5 +14,6 @@ sealed interface ApiError {
     data class NotFound(val statusCode: Int = 404) : ApiError
     data class Server(val statusCode: Int) : ApiError
     data object Parse : ApiError
+    data object SyncInProgress : ApiError
     data class Unknown(val summary: String? = null) : ApiError
 }

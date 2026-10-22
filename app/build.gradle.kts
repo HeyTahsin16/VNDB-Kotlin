@@ -109,7 +109,9 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.directories.add("../assets")
+            if (!file("src/main/assets").isDirectory && rootProject.file("assets").isDirectory) {
+                assets.directories.add("../assets")
+            }
         }
     }
 

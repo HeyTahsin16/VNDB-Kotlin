@@ -4,8 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -16,40 +14,54 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.vndblite.dcj.ui.theme.LocalAppThemeCode
+import com.vndblite.dcj.R
+import com.vndblite.dcj.core.AppLog
+import com.vndblite.dcj.domain.model.ThemeId
+import com.vndblite.dcj.ui.theme.LocalThemeSpec
+import com.vndblite.dcj.ui.theme.VndbTheme
 
+@Suppress("DEPRECATION")
 @Composable
 fun BbCodeText(
     rawText: String,
     modifier: Modifier = Modifier,
-    textColor: Color = LocalAppThemeCode.current.tertiary,
-    linkColor: Color = LocalAppThemeCode.current.secondary,
+    textColor: Color = LocalThemeSpec.current.contentColor,
+    linkColor: Color = LocalThemeSpec.current.accentColor,
     style: TextStyle = MaterialTheme.typography.bodyMedium
 ) {
     val context = LocalContext.current
-    val hasSpoilers = remember(rawText) { rawText.contains("[spoiler]", ignoreCase = true) }
-    var revealSpoilers by remember(rawText) { mutableStateOf(false) }
+    val parsedNodes = remember(rawText) { BbCodeParser.parse(rawText) }
+    val hasSpoilers = remember(parsedNodes) { BbCodeParser.hasSpoilers(parsedNodes) }
+    var revealSpoilers by rememberSaveable(rawText) { mutableStateOf(false) }
 
-    val annotated = remember(rawText, revealSpoilers, textColor, linkColor) {
-        parseBbCodeToAnnotatedString(
-            input = rawText,
-            revealSpoilers = revealSpoilers,
-            baseColor = textColor,
-            linkColor = linkColor
-        )
+    val spoilerPlaceholder = stringResource(R.string.spoiler_hidden_inline)
+    val notAvailableLabel = stringResource(R.string.label_not_available)
+
+    val annotated = remember(parsedNodes, revealSpoilers, spoilerPlaceholder, textColor, linkColor, notAvailableLabel) {
+        if (rawText.isBlank()) {
+            AnnotatedString(notAvailableLabel)
+        } else {
+            BbCodeParser.toAnnotatedString(
+                nodes = parsedNodes,
+                revealSpoilers = revealSpoilers,
+                spoilerPlaceholder = spoilerPlaceholder,
+                baseColor = textColor,
+                linkColor = linkColor
+            )
+        }
     }
 
     Column(modifier = modifier) {
@@ -59,10 +71,15 @@ fun BbCodeText(
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .padding(bottom = 6.dp)
+                    .semantics { role = Role.Button }
                     .clickable { revealSpoilers = !revealSpoilers }
             ) {
                 Text(
-                    text = if (revealSpoilers) "Hide Spoilers" else "Tap to Reveal Spoilers",
+                    text = if (revealSpoilers) {
+                        stringResource(R.string.spoiler_hide_action)
+                    } else {
+                        stringResource(R.string.spoiler_reveal_action)
+                    },
                     style = MaterialTheme.typography.labelMedium,
                     color = linkColor,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -74,126 +91,35 @@ fun BbCodeText(
             text = annotated,
             style = style.copy(color = textColor),
             onClick = { offset ->
-                annotated.getStringAnnotations(tag = "URL", start = offset, end = offset)
-                    .firstOrNull()?.let { annotation ->
-                        val url = annotation.item
-                        runCatching {
-                            val fullUrl = if (url.startsWith("/")) {
-                                "https://vndb.org$url"
-                            } else if (!url.startsWith("http")) {
-                                "https://$url"
-                            } else {
-                                url
-                            }
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fullUrl)))
+                annotated.getStringAnnotations(
+                    tag = BbCodeParser.URL_ANNOTATION_TAG,
+                    start = offset,
+                    end = offset
+                ).firstOrNull()?.let { annotation ->
+                    val url = annotation.item
+                    try {
+                        val fullUrl = when {
+                            url.startsWith("/") -> "https://vndb.org$url"
+                            !url.startsWith("http://") && !url.startsWith("https://") -> "https://$url"
+                            else -> url
                         }
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fullUrl)))
+                    } catch (e: Exception) {
+                        AppLog.w("BbCodeText", "Failed to open URL annotation: $url", e)
                     }
+                }
             }
         )
     }
 }
 
-private fun parseBbCodeToAnnotatedString(
-    input: String,
-    revealSpoilers: Boolean,
-    baseColor: Color,
-    linkColor: Color
-): AnnotatedString {
-    if (input.isBlank()) return AnnotatedString("--")
-
-    var working = input
-        .replace("\r\n", "\n")
-        .replace(Regex("\\[raw\\]([\\s\\S]*?)\\[/raw\\]", RegexOption.IGNORE_CASE), "$1")
-        .replace(Regex("\\[quote\\]([\\s\\S]*?)\\[/quote\\]", RegexOption.IGNORE_CASE), "\n“$1”\n")
-
-    if (!revealSpoilers) {
-        working = working.replace(
-            Regex("\\[spoiler\\]([\\s\\S]*?)\\[/spoiler\\]", RegexOption.IGNORE_CASE),
-            " [Spoiler Hidden] "
+@Preview(showBackground = true)
+@Composable
+private fun BbCodeTextPreview() {
+    VndbTheme(themeId = ThemeId.AGL) {
+        BbCodeText(
+            rawText = "A [b]bold [i]and italic[/i][/b] synopsis with [sic] note and [spoiler]secret ending[/spoiler].",
+            modifier = Modifier.padding(12.dp)
         )
-    } else {
-        working = working.replace(
-            Regex("\\[/?spoiler\\]", RegexOption.IGNORE_CASE),
-            ""
-        )
-    }
-
-    return buildAnnotatedString {
-        var idx = 0
-        val tokenRegex = Regex(
-            "\\[(b|i|u|s|code)\\]([\\s\\S]*?)\\[/\\1\\]|\\[url=([^\\]]+)\\]([\\s\\S]*?)\\[/url\\]|\\[url\\]([\\s\\S]*?)\\[/url\\]",
-            RegexOption.IGNORE_CASE
-        )
-
-        val matches = tokenRegex.findAll(working).toList()
-        if (matches.isEmpty()) {
-            val cleaned = working.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-            append(cleaned)
-            return@buildAnnotatedString
-        }
-
-        for (match in matches) {
-            if (match.range.first > idx) {
-                val plain = working.substring(idx, match.range.first)
-                    .replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                append(plain)
-            }
-
-            val tagType = match.groups[1]?.value?.lowercase()
-            val tagContent = match.groups[2]?.value
-            val urlTarget = match.groups[3]?.value
-            val urlLabel = match.groups[4]?.value
-            val bareUrl = match.groups[5]?.value
-
-            when {
-                tagType != null && tagContent != null -> {
-                    val cleanInner = tagContent.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                    val span = when (tagType) {
-                        "b" -> SpanStyle(fontWeight = FontWeight.Bold)
-                        "i" -> SpanStyle(fontStyle = FontStyle.Italic)
-                        "u" -> SpanStyle(textDecoration = TextDecoration.Underline)
-                        "s" -> SpanStyle(textDecoration = TextDecoration.LineThrough)
-                        "code" -> SpanStyle(fontFamily = FontFamily.Monospace, background = baseColor.copy(alpha = 0.15f))
-                        else -> SpanStyle()
-                    }
-                    pushStyle(span)
-                    append(cleanInner)
-                    pop()
-                }
-                urlTarget != null && urlLabel != null -> {
-                    val cleanLabel = urlLabel.replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-                    pushStringAnnotation(tag = "URL", annotation = urlTarget.trim())
-                    pushStyle(
-                        SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    append(cleanLabel)
-                    pop()
-                    pop()
-                }
-                bareUrl != null -> {
-                    pushStringAnnotation(tag = "URL", annotation = bareUrl.trim())
-                    pushStyle(
-                        SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    append(bareUrl.trim())
-                    pop()
-                    pop()
-                }
-            }
-            idx = match.range.last + 1
-        }
-
-        if (idx < working.length) {
-            val tail = working.substring(idx).replace(Regex("\\[/?[a-zA-Z0-9=]+\\]"), "")
-            append(tail)
-        }
     }
 }

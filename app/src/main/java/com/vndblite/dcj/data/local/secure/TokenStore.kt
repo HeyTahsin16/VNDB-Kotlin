@@ -164,7 +164,6 @@ class EncryptedTokenStore(
     override suspend fun getToken(accountId: String?): String? = withContext(dispatchers.io) {
         val key = resolvePrefKey(accountId)
         val encoded = sharedPreferences.getString(key, null)
-            ?: if (accountId != null) sharedPreferences.getString(KEY_ACTIVE_TOKEN, null) else null
         if (encoded.isNullOrBlank()) {
             return@withContext null
         }

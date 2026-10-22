@@ -121,6 +121,10 @@ class SettingsAndTokenStoreTest {
         assertEquals(secretToken, tokenStore.getToken("u42"))
         assertEquals(secretToken, tokenStore.getToken(null))
 
+        // Verify querying a different account whose key is missing does NOT fall back to the active account's token
+        assertFalse(tokenStore.hasToken("u777"))
+        assertNull(tokenStore.getToken("u777"))
+
         // Verify corrupt ciphertext is handled gracefully and returns null instead of crashing
         prefs.edit().putString("token_account_u99", "not-valid-base64-ciphertext!!").commit()
         assertNull(tokenStore.getToken("u99"))

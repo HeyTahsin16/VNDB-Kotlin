@@ -2,16 +2,457 @@
 <resources>
     <string name="app_name">VNDB Kotlin</string>
     <string name="app_description">A modern, free, and open-source Kotlin Android client for vndb.org.</string>
+
+    <!-- Bottom Navigation -->
     <string name="tab_home">Home</string>
     <string name="tab_search">Search</string>
     <string name="tab_collection">Collection</string>
     <string name="tab_others">Others</string>
-    <string name="search_hint">Search visual novels or characters...</string>
-    <string name="no_results">No further results ;)</string>
+
+    <!-- Common Actions & Labels -->
+    <string name="action_retry">Retry</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_save">Save</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_see_more">See more</string>
+    <string name="action_load_more">Load more</string>
+    <string name="action_select_all">Select all</string>
+    <string name="action_clear_selection">Clear selection</string>
+    <string name="action_open_in_browser">Open in browser</string>
+    <string name="label_loading">Loading…</string>
+    <string name="label_not_available">N/A</string>
+    <string name="label_unknown">Unknown</string>
+    <string name="label_tba">TBA</string>
+    <string name="label_not_started">Not started</string>
+    <string name="label_unvoted">Unvoted</string>
+    <string name="label_none">None</string>
+    <string name="label_all">All</string>
+    <string name="label_yes">Yes</string>
+    <string name="label_no">No</string>
+    <string name="label_selected">Selected</string>
+    <string name="label_no_cover">No cover</string>
+
+    <!-- NSFW & Spoilers -->
+    <string name="nsfw_badge_reveal">NSFW 18+</string>
+    <string name="nsfw_badge_hide">Hide</string>
+    <string name="nsfw_toggle_cd">Toggle NSFW image blur</string>
+    <string name="spoiler_reveal_action">Tap to Reveal Spoilers</string>
+    <string name="spoiler_hide_action">Hide Spoilers</string>
+    <string name="spoiler_hidden_inline">[Spoiler Hidden]</string>
+    <string name="spoiler_level_none">No Spoilers</string>
+    <string name="spoiler_level_minor">Minor Spoilers</string>
+    <string name="spoiler_level_major">All Spoilers</string>
+
+    <!-- API Errors -->
+    <string name="error_offline">You appear to be offline. Check your connection and try again.</string>
+    <string name="error_timeout">The request timed out. Please try again.</string>
+    <string name="error_rate_limited">Rate limited by VNDB. Please wait a moment and try again.</string>
+    <string name="error_rate_limited_seconds">Rate limited by VNDB. Please retry in %1$d seconds.</string>
+    <string name="error_unauthorized">Invalid or expired VNDB Personal Access Token.</string>
+    <string name="error_missing_permission">Token is missing required permissions: %1$s.</string>
+    <string name="error_bad_request">Invalid request (HTTP %1$d).</string>
+    <string name="error_not_found">Requested item was not found on VNDB (HTTP %1$d).</string>
+    <string name="error_server">VNDB server error (HTTP %1$d). Please try again later.</string>
+    <string name="error_parse">Could not read response from VNDB.</string>
+    <string name="error_sync_in_progress">A collection sync is already in progress.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
     <string name="connection_error">Connection error, unable to fetch data. Please try again later.</string>
+    <string name="no_results">No matching results found.</string>
+
+    <!-- Themes -->
+    <string name="theme_palette_dark">Dark Palette</string>
+    <string name="theme_palette_light">Light Palette</string>
+    <string name="theme_name_agl">Angel Serenade</string>
+    <string name="theme_name_air">AIR</string>
+    <string name="theme_name_ev17">Ever17</string>
+    <string name="theme_name_fate">Fate/Stay Night</string>
+    <string name="theme_name_carnvl">Gekkou No Carnevale</string>
+    <string name="theme_name_hgrshi">Higurashi No Naku Koro Ni</string>
+    <string name="theme_name_tsukhme">Tsukihime</string>
+    <string name="theme_name_toho">Touhou</string>
+    <string name="theme_name_seinrkn">Seinarukana</string>
+    <string name="theme_name_lilbusts">Little Busters!</string>
+    <string name="theme_name_saya">Saya No Uta</string>
+
+    <!-- Collection Statuses -->
+    <string name="status_playing">Playing</string>
+    <string name="status_finished">Finished</string>
+    <string name="status_stalled">Stalled</string>
+    <string name="status_dropped">Dropped</string>
+    <string name="status_wishlist">Wishlist</string>
+    <string name="status_blacklist">Blacklist</string>
+
+    <!-- Development Statuses -->
+    <string name="dev_status_finished">Finished</string>
+    <string name="dev_status_in_development">In Development</string>
+    <string name="dev_status_cancelled">Cancelled</string>
+    <string name="dev_status_unknown">Unknown</string>
+
+    <!-- Play Length Buckets -->
+    <string name="length_very_short">&lt; 2 hours</string>
+    <string name="length_short">2 - 10 hours</string>
+    <string name="length_medium">10 - 30 hours</string>
+    <string name="length_long">30 - 50 hours</string>
+    <string name="length_very_long">&gt; 50 hours</string>
+    <string name="length_hours_minutes">%1$dh %2$dm</string>
+    <string name="length_hours_only">%1$dh</string>
+    <string name="length_minutes_only">%1$dm</string>
+
+    <!-- Votes -->
+    <string name="vote_none">- (None)</string>
+    <string name="vote_1">1 (Worst ever)</string>
+    <string name="vote_2">2 (Awful)</string>
+    <string name="vote_3">3 (Bad)</string>
+    <string name="vote_4">4 (Weak)</string>
+    <string name="vote_5">5 (So-so)</string>
+    <string name="vote_6">6 (Decent)</string>
+    <string name="vote_7">7 (Good)</string>
+    <string name="vote_8">8 (Very good)</string>
+    <string name="vote_9">9 (Excellent)</string>
+    <string name="vote_10">10 (Masterpiece)</string>
+    <string name="vote_card_format">Voted: %1$s/10</string>
+    <string name="votes_count_format">%1$d votes</string>
+    <string name="rating_with_votes_format">%1$s (%2$d)</string>
+
+    <!-- Sort Fields & Orders -->
+    <string name="sort_search_rank">Relevance</string>
+    <string name="sort_id">ID</string>
+    <string name="sort_title">Title</string>
+    <string name="sort_added">Time Added</string>
+    <string name="sort_started">Time Started</string>
+    <string name="sort_finished">Time Finished</string>
+    <string name="sort_last_modified">Last Modified</string>
+    <string name="sort_length">Play Length</string>
+    <string name="sort_rating">Rating</string>
+    <string name="sort_released">Release Date</string>
+    <string name="sort_vote_count">Vote Count</string>
+    <string name="sort_user_vote">My Vote</string>
+    <string name="sort_collection">Collection</string>
+    <string name="sort_order_ascending">Ascending</string>
+    <string name="sort_order_descending">Descending</string>
+
+    <!-- Character Roles & Sex -->
+    <string name="char_role_main">Protagonist</string>
+    <string name="char_role_primary">Main Character</string>
+    <string name="char_role_side">Side Character</string>
+    <string name="char_role_appears">Makes an Appearance</string>
+    <string name="char_sex_female">Female</string>
+    <string name="char_sex_male">Male</string>
+    <string name="char_sex_both">Both</string>
+    <string name="char_sex_sexless">Sexless</string>
+
+    <!-- Relation Types -->
+    <string name="relation_sequel">Sequel</string>
+    <string name="relation_prequel">Prequel</string>
+    <string name="relation_same_setting">Same Setting</string>
+    <string name="relation_alternative_version">Alternative Version</string>
+    <string name="relation_shares_characters">Shares Characters</string>
+    <string name="relation_side_story">Side Story</string>
+    <string name="relation_parent_story">Parent Story</string>
+    <string name="relation_same_series">Same Series</string>
+    <string name="relation_fandisc">Fandisc</string>
+    <string name="relation_original_game">Original Game</string>
+    <string name="relation_other">Other Relation</string>
+    <string name="relation_unofficial">Unofficial</string>
+
+    <!-- Languages -->
+    <string name="lang_ar">Arabic</string>
+    <string name="lang_bg">Bulgarian</string>
+    <string name="lang_ca">Catalan</string>
+    <string name="lang_cs">Czech</string>
+    <string name="lang_de">German</string>
+    <string name="lang_el">Greek</string>
+    <string name="lang_en">English</string>
+    <string name="lang_es">Spanish</string>
+    <string name="lang_fi">Finnish</string>
+    <string name="lang_fr">French</string>
+    <string name="lang_hr">Croatian</string>
+    <string name="lang_hu">Hungarian</string>
+    <string name="lang_id">Indonesian</string>
+    <string name="lang_it">Italian</string>
+    <string name="lang_ja">Japanese</string>
+    <string name="lang_ko">Korean</string>
+    <string name="lang_ms">Malay</string>
+    <string name="lang_nl">Dutch</string>
+    <string name="lang_no">Norwegian</string>
+    <string name="lang_pl">Polish</string>
+    <string name="lang_pt_br">Portuguese (Brazil)</string>
+    <string name="lang_pt_pt">Portuguese (Portugal)</string>
+    <string name="lang_ro">Romanian</string>
+    <string name="lang_ru">Russian</string>
+    <string name="lang_sk">Slovak</string>
+    <string name="lang_sr">Serbian</string>
+    <string name="lang_sv">Swedish</string>
+    <string name="lang_ta">Tamil</string>
+    <string name="lang_th">Thai</string>
+    <string name="lang_tr">Turkish</string>
+    <string name="lang_uk">Ukrainian</string>
+    <string name="lang_vi">Vietnamese</string>
+    <string name="lang_zh_hans">Simplified Chinese</string>
+    <string name="lang_zh_hant">Traditional Chinese</string>
+    <string name="lang_other">Other</string>
+    <string name="lang_mtl_suffix">%1$s (MTL)</string>
+
+    <!-- Platforms -->
+    <string name="platform_win">Windows</string>
+    <string name="platform_lin">Linux</string>
+    <string name="platform_mac">macOS</string>
+    <string name="platform_web">Website</string>
+    <string name="platform_tdo">3DO</string>
+    <string name="platform_ios">iOS</string>
+    <string name="platform_and">Android</string>
+    <string name="platform_bdp">Blu-ray Player</string>
+    <string name="platform_dos">DOS</string>
+    <string name="platform_dvd">DVD Player</string>
+    <string name="platform_drc">Dreamcast</string>
+    <string name="platform_nes">Famicom</string>
+    <string name="platform_sfc">Super Famicom</string>
+    <string name="platform_fm7">FM-7</string>
+    <string name="platform_fm8">FM-8</string>
+    <string name="platform_fmt">FM Towns</string>
+    <string name="platform_gba">Game Boy Advance</string>
+    <string name="platform_gbc">Game Boy Color</string>
+    <string name="platform_msx">MSX</string>
+    <string name="platform_nds">Nintendo DS</string>
+    <string name="platform_swi">Nintendo Switch</string>
+    <string name="platform_sw2">Nintendo Switch 2</string>
+    <string name="platform_wii">Nintendo Wii</string>
+    <string name="platform_wiu">Nintendo Wii U</string>
+    <string name="platform_n3d">Nintendo 3DS</string>
+    <string name="platform_p88">PC-88</string>
+    <string name="platform_p98">PC-98</string>
+    <string name="platform_pce">PC Engine</string>
+    <string name="platform_pcf">PC-FX</string>
+    <string name="platform_psp">PlayStation Portable</string>
+    <string name="platform_ps1">PlayStation 1</string>
+    <string name="platform_ps2">PlayStation 2</string>
+    <string name="platform_ps3">PlayStation 3</string>
+    <string name="platform_ps4">PlayStation 4</string>
+    <string name="platform_ps5">PlayStation 5</string>
+    <string name="platform_psv">PlayStation Vita</string>
+    <string name="platform_smd">Sega Mega Drive</string>
+    <string name="platform_scd">Sega Mega-CD</string>
+    <string name="platform_sat">Sega Saturn</string>
+    <string name="platform_vnd">VNDS</string>
+    <string name="platform_x1s">Sharp X1</string>
+    <string name="platform_x68">Sharp X68000</string>
+    <string name="platform_xb1">Xbox</string>
+    <string name="platform_xb3">Xbox 360</string>
+    <string name="platform_xbo">Xbox One</string>
+    <string name="platform_xxs">Xbox Series X/S</string>
+    <string name="platform_mob">Other (Mobile)</string>
+    <string name="platform_oth">Other</string>
+
+    <!-- Home Screen -->
+    <string name="home_subtitle">Visual Novel Database Explorer</string>
+    <string name="home_trait_finder_button">Character &amp; Trait Finder</string>
+    <string name="home_random_vn_button">Random High-Rated VN</string>
+    <string name="home_section_collection">My Collection</string>
+    <string name="home_section_top_rated">Top Rated</string>
+    <string name="home_section_top_voted">Top Voted</string>
+    <string name="home_section_popular_ongoing">Popular Ongoing</string>
+    <string name="home_section_latest_releases">Latest Releases</string>
+    <string name="home_section_upcoming_releases">Upcoming Releases</string>
+    <string name="home_collection_empty">Your collection is empty. Browse or search to add visual novels.</string>
     <string name="explore_genres">Explore General Genres</string>
-    <string name="add_to_collection">Add to collection</string>
-    <string name="user_authentication">User Authentication</string>
-    <string name="settings_title">Settings</string>
-    <string name="about_title">About</string>
+    <string name="home_popular_traits_title">Popular Character Traits</string>
+    <string name="home_quotes_title">Memorable Quotes</string>
+    <string name="home_quotes_shuffle">Shuffle Quotes</string>
+    <string name="home_quotes_empty">No quotes loaded yet.</string>
+    <string name="home_collection_chart_title">Collection Status Overview</string>
+    <string name="home_site_stats_title">VNDB Live Database Stats</string>
+    <string name="home_site_stats_unavailable">Live statistics unavailable while offline.</string>
+    <string name="home_stat_vns">Visual Novels</string>
+    <string name="home_stat_releases">Releases</string>
+    <string name="home_stat_producers">Producers</string>
+    <string name="home_stat_chars">Characters</string>
+    <string name="home_stat_staff">Staff</string>
+    <string name="home_stat_tags">Tags</string>
+    <string name="home_stat_traits">Traits</string>
+
+    <!-- Search & Character Explorer -->
+    <string name="search_hint">Search visual novels or characters...</string>
+    <string name="search_vn_hint">Search visual novels by title…</string>
+    <string name="search_character_hint">Search characters by name…</string>
+    <string name="search_mode_vns">Visual Novels</string>
+    <string name="search_mode_characters">Characters &amp; Traits</string>
+    <string name="search_filter_cd">Open search filters</string>
+    <string name="search_sort_cd">Change sort order</string>
+    <string name="search_clear_query_cd">Clear search query</string>
+    <string name="search_filter_sheet_title">Search &amp; Sort Filters</string>
+    <string name="search_release_window_title">Release Window</string>
+    <string name="search_release_all">All Releases</string>
+    <string name="search_release_latest">Released</string>
+    <string name="search_release_upcoming">Upcoming</string>
+    <string name="search_tags_title">Tags &amp; Genres</string>
+    <string name="search_tags_hint">Search tags (e.g., Romance, Sci-fi)…</string>
+    <string name="search_traits_title">Character Traits</string>
+    <string name="search_traits_hint">Search traits (e.g., Tsundere, Maid)…</string>
+    <string name="search_developers_title">Developers / Producers</string>
+    <string name="search_developers_hint">Search developers (e.g., Key, Type-Moon)…</string>
+    <string name="search_languages_title">Available Languages</string>
+    <string name="search_origin_languages_title">Original Language</string>
+    <string name="search_platforms_title">Platforms</string>
+    <string name="search_dev_status_title">Development Status</string>
+    <string name="search_char_roles_title">Character Roles</string>
+    <string name="search_char_sex_title">Character Sex</string>
+    <string name="search_operator_and">Match ALL (AND)</string>
+    <string name="search_operator_or">Match ANY (OR)</string>
+    <string name="search_reset_filters">Reset Filters</string>
+    <string name="search_apply_filters">Apply Filters</string>
+    <string name="char_bio_aliases">Aliases</string>
+    <string name="char_bio_birthday">Birthday: %1$02d/%2$02d</string>
+    <string name="char_bio_age">Age: %1$d</string>
+    <string name="char_bio_blood_type">Blood Type: %1$s</string>
+    <string name="char_bio_height">Height: %1$d cm</string>
+    <string name="char_bio_weight">Weight: %1$d kg</string>
+    <string name="char_bio_measurements">B/W/H: %1$s</string>
+    <string name="char_bio_appearances">Visual Novel Appearances</string>
+    <string name="char_bio_traits">Character Traits</string>
+    <string name="char_bio_no_description">No biography available.</string>
+
+    <!-- Collection Screen & Entry Dialog -->
+    <string name="add_to_collection">Add to Collection</string>
+    <string name="edit_collection_entry">Edit Collection Entry</string>
+    <string name="collection_subtitle_count">%1$d visual novels in collection</string>
+    <string name="collection_search_hint">Filter local collection by title…</string>
+    <string name="collection_empty_tab">No visual novels in %1$s.</string>
+    <string name="collection_selection_count">%1$d selected</string>
+    <string name="collection_batch_edit_title">Batch Update (%1$d items)</string>
+    <string name="collection_batch_delete_title">Delete Selected Entries?</string>
+    <string name="collection_batch_delete_message">Remove %1$d selected entries from your collection? Synced entries will also be queued for removal from VNDB on your next sync.</string>
+    <string name="collection_remove_confirm_title">Remove from Collection?</string>
+    <string name="collection_remove_confirm_local">Remove \"%1$s\" from your local collection?</string>
+    <string name="collection_remove_confirm_synced">Remove \"%1$s\" from your collection? It will also be removed from your remote VNDB list on the next sync.</string>
+    <string name="collection_field_status">Status</string>
+    <string name="collection_field_vote">Your Rating (Vote)</string>
+    <string name="collection_field_started">Started Date</string>
+    <string name="collection_field_finished">Finished Date</string>
+    <string name="collection_field_notes">Personal Review / Notes</string>
+    <string name="collection_date_invalid_order">Finished date cannot be earlier than Started date.</string>
+    <string name="collection_date_select_cd">Select %1$s</string>
+    <string name="collection_date_clear_cd">Clear %1$s</string>
+    <string name="collection_filter_min_age">Minimum Age Rating</string>
+    <string name="collection_filter_min_age_any">Any Age</string>
+    <string name="collection_filter_min_age_all_ages">All Ages (0+)</string>
+    <string name="collection_filter_min_age_12">12+</string>
+    <string name="collection_filter_min_age_15">15+</string>
+    <string name="collection_filter_min_age_18">18+ Only</string>
+
+    <!-- VN Detail Screen -->
+    <string name="detail_tab_overview">Overview &amp; Tags</string>
+    <string name="detail_tab_cast_reviews">Cast, Quotes &amp; Reviews</string>
+    <string name="detail_tab_relations_links">Relations &amp; Links</string>
+    <string name="detail_section_synopsis">Synopsis</string>
+    <string name="detail_section_metadata">Release &amp; Metadata</string>
+    <string name="detail_section_screenshots">Screenshots</string>
+    <string name="detail_section_tags">Tags</string>
+    <string name="detail_section_characters">Characters</string>
+    <string name="detail_section_quotes">Quotes</string>
+    <string name="detail_section_reviews">Community Reviews</string>
+    <string name="detail_section_relations">Related Visual Novels</string>
+    <string name="detail_section_links">External Links</string>
+    <string name="detail_label_developers">Developers</string>
+    <string name="detail_label_aliases">Aliases</string>
+    <string name="detail_label_languages">Available Languages</string>
+    <string name="detail_label_platforms">Platforms</string>
+    <string name="detail_label_min_age">Age Rating</string>
+    <string name="detail_label_length">Play Length</string>
+    <string name="detail_label_released">Released</string>
+    <string name="detail_label_dev_status">Development Status</string>
+    <string name="detail_releases_truncated_note">Note: Release metadata is summarized from the first 100 releases.</string>
+    <string name="detail_review_read_more">Read Full Review</string>
+    <string name="detail_review_collapse">Show Less</string>
+    <string name="detail_no_synopsis">No description available.</string>
+    <string name="detail_no_tags">No tags available.</string>
+    <string name="detail_no_characters">No characters listed.</string>
+    <string name="detail_no_quotes">No quotes listed.</string>
+    <string name="detail_no_reviews">No community reviews found.</string>
+    <string name="detail_no_relations">No related visual novels listed.</string>
+    <string name="detail_no_links">No external links listed.</string>
+
+    <!-- Others, Settings, Auth/Sync, Random, About -->
+    <string name="user_authentication">VNDB Account &amp; Cloud Sync</string>
+    <string name="settings_title">Settings &amp; Themes</string>
+    <string name="about_title">About VNDB Kotlin</string>
+    <string name="others_subtitle">Account sync, discovery tools, appearance &amp; app info</string>
+    <string name="others_auth_desc">Authenticate with your VNDB Personal Access Token and sync your collection</string>
+    <string name="others_random_desc">Discover a random highly rated visual novel from VNDB</string>
+    <string name="others_settings_desc">Customize visual novel themes, NSFW blur, grid columns, and collection tabs</string>
+    <string name="others_about_desc">Version info, open-source license, and upstream credits</string>
+    <string name="others_bug_report_title">Report a Bug or Suggest a Feature</string>
+    <string name="others_bug_report_desc">Open GitHub Issues to report problems or request improvements</string>
+
+    <!-- Auth & Sync -->
+    <string name="auth_token_label">Personal Access Token</string>
+    <string name="auth_token_hint">Paste your VNDB token (e.g. a1b2-c3d4…)</string>
+    <string name="auth_token_help">Create a token on vndb.org under My Profile → Applications with both listread and listwrite permissions enabled.</string>
+    <string name="auth_open_vndb_tokens">Open VNDB Token Settings</string>
+    <string name="auth_verify_and_save">Verify &amp; Connect Account</string>
+    <string name="auth_connected_as">Connected as %1$s (%2$s)</string>
+    <string name="auth_permissions_ok">Permissions verified: listread, listwrite</string>
+    <string name="auth_permissions_missing">Missing required permissions: %1$s</string>
+    <string name="auth_sync_now">Sync Collection Now</string>
+    <string name="auth_logout">Disconnect Account</string>
+    <string name="auth_logout_title">Disconnect VNDB Account?</string>
+    <string name="auth_logout_message">Would you like to keep your local collection on this device or clear it?</string>
+    <string name="auth_logout_keep_local">Keep Local Collection</string>
+    <string name="auth_logout_clear_local">Clear Local Collection</string>
+    <string name="sync_report_complete">Sync complete: %1$d pushed, %2$d pulled, %3$d deleted remotely, %4$d deleted locally.</string>
+    <string name="sync_report_partial">Partial sync: %1$d pushed, %2$d pulled, %3$d failed. Failed entries remain queued for retry.</string>
+    <string name="sync_stage_validating">Verifying account permissions…</string>
+    <string name="sync_stage_fetching">Fetching remote VNDB userlist…</string>
+    <string name="sync_stage_pushing">Pushing local updates (%1$d/%2$d)…</string>
+    <string name="sync_stage_deleting">Applying remote deletions (%1$d/%2$d)…</string>
+    <string name="sync_stage_applying">Applying remote updates locally…</string>
+
+    <!-- Settings -->
+    <string name="settings_section_theme">Visual Novel Theme</string>
+    <string name="settings_section_display">Display &amp; Content</string>
+    <string name="settings_section_layout">Grid &amp; Preview Layout</string>
+    <string name="settings_section_tabs">Collection Tab Order</string>
+    <string name="settings_section_data">Storage &amp; Maintenance</string>
+    <string name="settings_nsfw_blur_title">Blur NSFW / 18+ Artwork</string>
+    <string name="settings_nsfw_blur_desc">Blur explicit covers, character portraits, and screenshots until tapped</string>
+    <string name="settings_show_chart_title">Show Collection Overview Chart</string>
+    <string name="settings_show_chart_desc">Display collection status distribution on the Home screen</string>
+    <string name="settings_font_scale_title">Font Size Offset (%1$+.1f sp)</string>
+    <string name="settings_max_preview_title">Home Carousel Items (%1$d)</string>
+    <string name="settings_portrait_cols_title">Portrait Grid Columns (%1$d)</string>
+    <string name="settings_landscape_cols_title">Landscape Grid Columns (%1$d)</string>
+    <string name="settings_move_tab_up_cd">Move %1$s tab up</string>
+    <string name="settings_move_tab_down_cd">Move %1$s tab down</string>
+    <string name="settings_clear_cache_button">Clear Transient Cache</string>
+    <string name="settings_clear_cache_confirm_title">Clear Transient Cache?</string>
+    <string name="settings_clear_cache_confirm_msg">This removes cached search/home metadata while preserving all your collection entries.</string>
+    <string name="settings_clear_collection_button">Clear Local Collection</string>
+    <string name="settings_clear_collection_confirm_title">Clear Local Collection?</string>
+    <string name="settings_clear_collection_confirm_msg">This deletes all visual novels from your local collection on this device.</string>
+    <string name="settings_reset_defaults_button">Reset Settings to Defaults</string>
+    <string name="settings_reset_defaults_confirm_title">Reset All Settings?</string>
+    <string name="settings_reset_defaults_confirm_msg">Restore default theme, font scale, grid columns, and tab order?</string>
+
+    <!-- Random VN -->
+    <string name="random_vn_title">Random High-Rated VN</string>
+    <string name="random_vn_roll_another">Roll Another VN</string>
+    <string name="random_vn_open_details">View Full Details</string>
+
+    <!-- About -->
+    <string name="about_version_format">Version %1$s (Build %2$d)</string>
+    <string name="about_credits_title">Credits &amp; Attributions</string>
+    <string name="about_credits_body">Inspired by upstream vndb-lite by Daniel C.J. Visual novel metadata and images are provided by vndb.org under the VNDB Data License (CC BY-NC-SA / ODC-By).</string>
+    <string name="about_license_title">Open Source License</string>
+    <string name="about_license_body">Licensed under the Apache License, Version 2.0. Free and open-source software with no ads, trackers, or analytics.</string>
+    <string name="about_github_button">View Source on GitHub</string>
+
+    <!-- Migration -->
+    <string name="migration_in_progress">Upgrading your local collection database…</string>
 </resources>

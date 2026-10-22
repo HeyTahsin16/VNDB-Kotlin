@@ -75,7 +75,7 @@ interface VndbApi {
     suspend fun fetchUserList(
         userId: String,
         token: String
-    ): AppResult<List<RemoteUserListItem>>
+    ): AppResult<PaginatedList<RemoteUserListItem>>
 
     suspend fun patchUserListEntry(
         token: String,

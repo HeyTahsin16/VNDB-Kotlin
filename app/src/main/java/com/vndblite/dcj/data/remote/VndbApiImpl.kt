@@ -25,7 +25,6 @@ import com.vndblite.dcj.data.remote.dto.VnDto
 import com.vndblite.dcj.data.remote.dto.summarizeReleases
 import com.vndblite.dcj.data.remote.filter.KanaFilter
 import com.vndblite.dcj.data.remote.filter.KanaFilters
-import com.vndblite.dcj.data.remote.http.HttpClientFactory
 import com.vndblite.dcj.data.remote.http.KanaHttpExecutor
 import com.vndblite.dcj.data.remote.http.RateLimiter
 import com.vndblite.dcj.domain.model.Character
@@ -54,8 +53,8 @@ import okhttp3.OkHttpClient
  * (N1-N10, F1, F6, R10).
  */
 class VndbApiImpl(
-    httpClient: OkHttpClient = HttpClientFactory.create(),
-    rateLimiter: RateLimiter = RateLimiter(),
+    httpClient: OkHttpClient,
+    rateLimiter: RateLimiter,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider,
     private val clock: Clock = SystemClock,
     private val json: Json = KanaJson,
@@ -387,7 +386,7 @@ class VndbApiImpl(
     override suspend fun fetchUserList(
         userId: String,
         token: String
-    ): AppResult<List<RemoteUserListItem>> = withContext(dispatchers.io) {
+    ): AppResult<PaginatedList<RemoteUserListItem>> = withContext(dispatchers.io) {
         val baseRequest = KanaQueryRequestDto(
             user = userId.trim(),
             fields = KanaFieldSets.USER_LIST_ENTRY,
@@ -402,7 +401,11 @@ class VndbApiImpl(
             authToken = token.trim(),
             maxPages = MAX_ULIST_PAGES
         ).map { page ->
-            page.items.mapNotNull { it.toDomainOrNull() }
+            PaginatedList(
+                items = page.items.mapNotNull { it.toDomainOrNull() },
+                hasMore = page.hasMore,
+                page = page.page
+            )
         }
     }
 
