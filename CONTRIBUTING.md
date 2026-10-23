@@ -1,6 +1,6 @@
-# Contributing to VNDB Kotlin
+# Contributing to VNDB Lite-Kotlin
 
-Thank you for your interest in contributing to **VNDB Kotlin**! This document outlines the development setup, coding standards, and pull request workflow.
+Thank you for your interest in contributing to **VNDB Lite-Kotlin**! This document outlines the development setup, coding standards, and pull request workflow.
 
 ## Prerequisites
 
