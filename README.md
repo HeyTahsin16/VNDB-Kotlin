@@ -2,7 +2,7 @@
 
 <img src="app/src/main/assets/images/icon/app_icon.png" alt="VNDB Lite-Kotlin App Icon" width="110" />
 
-# VNDB Kotlin
+# VNDB Lite-Kotlin
 
 **A free, open-source native Android client for [The Visual Novel Database (vndb.org)](https://vndb.org), written in Kotlin and Jetpack Compose.**
 
