@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/assets/images/icon/app_icon.png" alt="VNDB Lite-Kotlin App Icon" width="110" />
+<img src="https://github.com/HeyTahsin16/VNDB-Kotlin/blob/main/assets/images/icon/app_icon.png" alt="VNDB Lite-Kotlin App Icon" width="110" />
 
 # VNDB Lite-Kotlin
 
