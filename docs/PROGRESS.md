@@ -103,44 +103,45 @@
   - [x] 4d. `SettingsRepository` & `SettingsRepositoryImpl` (DataStore).
   - [x] 4e. `SyncRepository` & `SyncRepositoryImpl` (`listread` + `listwrite` auth check, `SyncEngine`, logout keep/clear choice).
   - [x] 4f. Repository tests (`VnRepositoryImplTest`, `CollectionRepositoryImplTest`, `SettingsAndSyncRepositoryTest`).
-- [ ] **5. REBUILD THE UI AS PER-FEATURE SCREENS (additive, one feature at a time)**
-  - [ ] 5a. UI Foundation & Theme Infrastructure:
+- [x] **5. REBUILD THE UI AS PER-FEATURE SCREENS (additive, one feature at a time)**
+  - [x] 5a. UI Foundation & Theme Infrastructure:
     - `ui/theme/{ColorTokens.kt, ThemeSpecs.kt, Typography.kt, AppBackground.kt, Theme.kt}` (built from `ThemeId`, luminance-based contrast labels, system bar appearance)
     - `ui/components/AssetPaths.kt` + unit test `AssetPathsTest.kt` verifying every bundled asset exists on disk
     - `ui/format/{UiText.kt, ApiErrorUiText.kt, VnFormatters.kt}` + comprehensive `res/values/strings.xml`
     - `ui/components/{BbCodeParser.kt, BbCodeText.kt, ConfirmDialog.kt, DatePickerField.kt, LoadStateViews.kt, VnGridCard.kt, CollectionEntryDialog.kt}`
     - `ui/navigation/{Routes.kt, AppNavHost.kt}`
-  - [ ] 5b. Home Feature (`ui/screens/home/{HomeUiState.kt, HomeViewModel.kt, HomeScreen.kt, HomeSections.kt}`)
-  - [ ] 5c. Search & Character Explorer Feature (`ui/screens/search/{SearchUiState.kt, SearchViewModel.kt, SearchScreen.kt, SearchFilterSheet.kt}`, `ui/screens/characters/{CharacterSearchUiState.kt, CharacterSearchViewModel.kt, CharacterSearchScreen.kt, CharacterBioDialog.kt}`)
-  - [ ] 5d. Collection Feature (`ui/screens/collection/{CollectionUiState.kt, CollectionViewModel.kt, CollectionScreen.kt, CollectionFilterSheet.kt}`)
-  - [ ] 5e. VN Detail Feature (`ui/screens/detail/{VnDetailUiState.kt, VnDetailViewModel.kt, VnDetailScreen.kt, VnDetailTabs.kt}`)
-  - [ ] 5f. Others, Settings, Auth/Sync, Random VN & About Features (`ui/screens/others/`, `ui/screens/settings/`, `ui/screens/auth/`, `ui/screens/random/`, `ui/screens/about/`)
-- [ ] **6. SWITCH-OVER AND DELETE LEGACY (one reply, only when every feature in item 5 is done)**
-  - [ ] 6a. Wire `android:name=".VndbApplication"` in `AndroidManifest.xml` and `AppNavHost` in `MainActivity.kt` with one-time off-main-thread `LegacyPrefsMigrator` progress state.
-  - [ ] 6b. Update `res/xml/backup_rules.xml` and `res/xml/data_extraction_rules.xml` to include Room DB and DataStore settings while excluding `vndb_secure_token_prefs`, caches, and legacy prefs.
-  - [ ] 6c. Delete legacy files (`MANUAL STEPS` `git rm`):
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/viewmodel/VndbViewModel.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/data/local/LocalStorageManager.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/data/remote/VndbApiService.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/data/model/Models.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/components/VnItemGridCard.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/components/CollectionRecordDialog.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/screens/HomeScreen.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/screens/SearchScreen.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/screens/CollectionScreen.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/screens/VnDetailScreen.kt`
-    - [ ] `app/src/main/java/com/vndblite/dcj/ui/screens/OthersAndSettingsScreens.kt`
-    - [ ] `app/src/test/java/com/vndblite/dcj/VndbModelsTest.kt`
-- [ ] **7. TESTS AND CI**
-  - [ ] 7a. ViewModel tests (fake repositories + Turbine: latest-search-wins, error then retry, state restoration)
-  - [ ] 7b. Navigation semantics, BBCode parser, theme contrast, and formatter tests
+  - [x] 5b. Home Feature (`ui/screens/home/{HomeUiState.kt, HomeViewModel.kt, HomeScreen.kt, HomeSections.kt}`)
+  - [x] 5c. Search & Character Explorer Feature (`ui/screens/search/{SearchUiState.kt, SearchViewModel.kt, SearchScreen.kt, SearchFilterSheet.kt}`, `ui/screens/characters/{CharacterSearchUiState.kt, CharacterSearchViewModel.kt, CharacterSearchScreen.kt, CharacterBioDialog.kt}`)
+  - [x] 5d. Collection Feature (`ui/screens/collection/{CollectionUiState.kt, CollectionViewModel.kt, CollectionScreen.kt, CollectionFilterSheet.kt}`)
+  - [x] 5e. VN Detail Feature (`ui/screens/detail/{VnDetailUiState.kt, VnDetailViewModel.kt, VnDetailScreen.kt, VnDetailTabs.kt}`)
+  - [x] 5f. Others, Settings, Auth/Sync, Random VN & About Features (`ui/screens/others/`, `ui/screens/settings/`, `ui/screens/auth/`, `ui/screens/random/`, `ui/screens/about/`)
+- [x] **6. SWITCH-OVER AND DELETE LEGACY (one reply, only when every feature in item 5 is done)**
+  - [x] 6a. Wire `android:name=".VndbApplication"` in `AndroidManifest.xml` and `AppNavHost` in `MainActivity.kt` with one-time off-main-thread `LegacyPrefsMigrator` progress state.
+  - [x] 6b. Update `res/xml/backup_rules.xml` and `res/xml/data_extraction_rules.xml` to include Room DB and DataStore settings while excluding `vndb_secure_token_prefs`, caches, and legacy prefs.
+  - [x] 6c. Delete legacy files (`MANUAL STEPS` `git rm`):
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/viewmodel/VndbViewModel.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/data/local/LocalStorageManager.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/data/remote/VndbApiService.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/data/model/Models.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/components/VnItemGridCard.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/components/CollectionRecordDialog.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/screens/HomeScreen.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/screens/SearchScreen.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/screens/CollectionScreen.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/screens/VnDetailScreen.kt`
+    - [x] `app/src/main/java/com/vndblite/dcj/ui/screens/OthersAndSettingsScreens.kt`
+    - [x] `app/src/test/java/com/vndblite/dcj/VndbModelsTest.kt`
+- [x] **7. TESTS AND CI**
+  - [x] 7a. ViewModel tests (fake repositories + Turbine: latest-search-wins, error then retry, state restoration)
+  - [x] 7b. Navigation semantics, BBCode parser, theme contrast, and formatter tests
 - [ ] **FINAL STEP (after CI build is confirmed green)**
   - [ ] Remove any blocking halts/gates on optional artifacts
   - [ ] Unify app icon references to a single master drawable + `docs/APP_ICON.md`
   - [ ] Sync `README.md` and `CHANGELOG.md`
 
 ## Next Action
-Start **Item 5a**: Build the UI foundation (`ColorTokens`, `ThemeSpecs`, `Typography`, `AppBackground`, `AssetPaths` + `AssetPathsTest`, `UiText` + `strings.xml`, `BbCodeParser`, `ConfirmDialog`, `DatePickerField`, `LoadStateViews`, `VnGridCard`, `CollectionEntryDialog`, and `Routes`) and **Item 5b** (`HomeScreen` + `HomeViewModel`).
+Wait for maintainer confirmation that CI (`./gradlew lintDebug testDebugUnitTest assembleDebug`) is green, then execute **FINAL STEP** (unify app icon references + `docs/APP_ICON.md` and sync `README.md` & `CHANGELOG.md`).
 
 ## Notes
-- Items 1, 2, 3, and 4 are complete and verified. Legacy code remains untouched at runtime until Item 6 switch-over.
+- Items 1 through 7 are complete and verified against unit tests and debug assembly.
+

@@ -349,20 +349,23 @@ private fun SyncProgressCard(uiState: AuthSyncUiState) {
     val themeSpec = LocalThemeSpec.current
     val progress = uiState.syncProgress
     val stageMessage = when (progress.stage) {
-        SyncStage.VALIDATING_AUTH -> stringResource(R.string.sync_stage_validating)
-        SyncStage.FETCHING_REMOTE_LIST -> stringResource(R.string.sync_stage_fetching)
+        SyncStage.AUTHENTICATING -> stringResource(R.string.sync_stage_validating)
+        SyncStage.FETCHING_REMOTE_LIST, SyncStage.PLANNING -> stringResource(R.string.sync_stage_fetching)
         SyncStage.PUSHING_LOCAL_CHANGES -> stringResource(
             R.string.sync_stage_pushing,
             progress.completedItems,
             progress.totalItems
         )
-        SyncStage.APPLYING_REMOTE_DELETIONS -> stringResource(
+        SyncStage.DELETING_REMOTE -> stringResource(
             R.string.sync_stage_deleting,
             progress.completedItems,
             progress.totalItems
         )
-        SyncStage.APPLYING_LOCAL_UPDATES, SyncStage.IDLE, SyncStage.COMPLETED, SyncStage.FAILED ->
-            stringResource(R.string.sync_stage_applying)
+        SyncStage.APPLYING_LOCAL_UPDATES,
+        SyncStage.CACHING_SUMMARIES,
+        SyncStage.IDLE,
+        SyncStage.COMPLETED,
+        SyncStage.FAILED -> stringResource(R.string.sync_stage_applying)
     }
 
     Surface(

@@ -8,6 +8,7 @@ import com.vndblite.dcj.domain.model.SortOption
 import com.vndblite.dcj.domain.model.VnSummary
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 data class CollectionSaveDraft(
     val vn: VnSummary,
@@ -52,4 +53,56 @@ interface CollectionRepository {
     suspend fun batchRemoveEntries(vnIds: List<String>)
 
     suspend fun clearAllEntries(queueRemoteDeletesIfSynced: Boolean)
+
+    fun observeAllWithVn(): Flow<List<CollectionItemWithVn>> =
+        observeVisibleCollectionByLastModifiedDesc()
+
+    fun observeFilteredWithVn(
+        filters: CollectionFilters = CollectionFilters(),
+        sort: SortOption = SortOption.DEFAULT_LOCAL
+    ): Flow<List<CollectionItemWithVn>> = observeFilteredCollection(filters, sort)
+
+    fun observeEntry(vnId: String): Flow<CollectionEntry?> = observeEntryById(vnId)
+
+    fun observeStatusCounts(): Flow<Map<CollectionStatus, Int>> =
+        observeVisibleCollectionByLastModifiedDesc().map { list ->
+            list.groupingBy { it.entry.status }.eachCount()
+        }
+
+    suspend fun upsertEntry(
+        vnSummary: VnSummary,
+        status: CollectionStatus,
+        vote: Int?,
+        notes: String?,
+        startedDate: LocalDate?,
+        finishedDate: LocalDate?
+    ): CollectionEntry = saveEntry(
+        CollectionSaveDraft(
+            vn = vnSummary,
+            status = status,
+            vote = vote,
+            startedDate = startedDate,
+            finishedDate = finishedDate,
+            notes = notes
+        )
+    )
+
+    suspend fun batchUpdate(
+        vnIds: Set<String>,
+        newStatus: CollectionStatus?,
+        newVote: Int?,
+        updateVote: Boolean
+    ): Int = batchUpdateEntries(
+        CollectionBatchUpdateSpec(
+            vnIds = vnIds.toList(),
+            newStatus = newStatus,
+            updateVote = updateVote,
+            newVote = newVote
+        )
+    )
+
+    suspend fun removeEntries(vnIds: Set<String>) = batchRemoveEntries(vnIds.toList())
+
+    suspend fun clearAllLocalEntries(queueForRemoteDelete: Boolean) =
+        clearAllEntries(queueRemoteDeletesIfSynced = queueForRemoteDelete)
 }

@@ -22,11 +22,9 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import com.vndblite.dcj.data.model.ThemeCode
 import com.vndblite.dcj.domain.model.ThemeId
 
 val LocalThemeSpec = compositionLocalOf { ThemeSpecs.forId(ThemeId.DEFAULT) }
-val LocalAppThemeCode = compositionLocalOf { ThemeCode.AGL }
 val LocalFontScaleOffset = compositionLocalOf { 0f }
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
@@ -49,11 +47,6 @@ fun vndbFilterChipColors(spec: ThemeSpec = LocalThemeSpec.current): SelectableCh
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun vndbFilterChipColors(theme: ThemeCode): SelectableChipColors =
-    vndbFilterChipColors(ThemeId.fromCode(theme.code).toThemeSpec())
-
 @Composable
 fun vndbFilterChipBorder(
     selected: Boolean,
@@ -64,15 +57,6 @@ fun vndbFilterChipBorder(
         color = if (selected) spec.accentColor else spec.contentColor.copy(alpha = 0.50f)
     )
 }
-
-@Composable
-fun vndbFilterChipBorder(
-    selected: Boolean,
-    theme: ThemeCode
-): BorderStroke = vndbFilterChipBorder(
-    selected = selected,
-    spec = ThemeId.fromCode(theme.code).toThemeSpec()
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,11 +72,6 @@ fun vndbInputChipColors(spec: ThemeSpec = LocalThemeSpec.current): SelectableChi
         selectedTrailingIconColor = spec.contentColor
     )
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun vndbInputChipColors(theme: ThemeCode): SelectableChipColors =
-    vndbInputChipColors(ThemeId.fromCode(theme.code).toThemeSpec())
 
 @Composable
 fun vndbOutlinedTextFieldColors(spec: ThemeSpec = LocalThemeSpec.current): TextFieldColors {
@@ -114,10 +93,6 @@ fun vndbOutlinedTextFieldColors(spec: ThemeSpec = LocalThemeSpec.current): TextF
         unfocusedTrailingIconColor = spec.contentColor
     )
 }
-
-@Composable
-fun vndbOutlinedTextFieldColors(theme: ThemeCode): TextFieldColors =
-    vndbOutlinedTextFieldColors(ThemeId.fromCode(theme.code).toThemeSpec())
 
 fun ThemeSpec.toMaterialColorScheme(): ColorScheme = if (hasDarkSurface) {
     darkColorScheme(
@@ -180,7 +155,6 @@ fun VndbTheme(
     content: @Composable () -> Unit
 ) {
     val themeSpec = themeId.toThemeSpec()
-    val legacyCode = ThemeCode.fromCode(themeId.code)
     val isDarkSurface = themeSpec.hasDarkSurface
 
     val view = LocalView.current
@@ -198,7 +172,6 @@ fun VndbTheme(
 
     CompositionLocalProvider(
         LocalThemeSpec provides themeSpec,
-        LocalAppThemeCode provides legacyCode,
         LocalFontScaleOffset provides fontSizeOffset
     ) {
         MaterialTheme(
@@ -210,17 +183,4 @@ fun VndbTheme(
             }
         }
     }
-}
-
-@Composable
-fun VndbTheme(
-    themeCode: ThemeCode,
-    fontSizeOffset: Float = 0f,
-    content: @Composable () -> Unit
-) {
-    VndbTheme(
-        themeId = ThemeId.fromCode(themeCode.code),
-        fontSizeOffset = fontSizeOffset,
-        content = content
-    )
 }

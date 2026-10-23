@@ -63,7 +63,16 @@ data class SyncProgress(
     val currentVnId: String? = null,
     val lastReport: SyncReport? = null,
     val lastError: ApiError? = null
-)
+) {
+    val isSyncing: Boolean
+        get() = isRunning
+
+    val completedItems: Int
+        get() = completedOperations
+
+    val totalItems: Int
+        get() = totalOperations
+}
 
 /**
  * Contract for account authentication, two-way userlist synchronization, and account-scoped logout (A3, Y1-Y6).

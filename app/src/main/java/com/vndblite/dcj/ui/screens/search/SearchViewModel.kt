@@ -282,7 +282,7 @@ class SearchViewModel(
         }
         tagSuggestionJob = viewModelScope.launch {
             if (queryDebounceMs > 0L) delay(200L)
-            when (val res = vnRepository.searchTags(query.trim(), pageSize = 15)) {
+            when (val res = vnRepository.searchTags(query.trim(), maxResults = 15)) {
                 is AppResult.Success -> _uiState.update { it.copy(tagSuggestions = res.data) }
                 is AppResult.Failure -> _uiState.update { it.copy(tagSuggestions = emptyList()) }
             }
@@ -297,7 +297,7 @@ class SearchViewModel(
         }
         traitSuggestionJob = viewModelScope.launch {
             if (queryDebounceMs > 0L) delay(200L)
-            when (val res = vnRepository.searchTraits(query.trim(), pageSize = 15)) {
+            when (val res = vnRepository.searchTraits(query.trim(), maxResults = 15)) {
                 is AppResult.Success -> _uiState.update { it.copy(traitSuggestions = res.data) }
                 is AppResult.Failure -> _uiState.update { it.copy(traitSuggestions = emptyList()) }
             }
@@ -312,7 +312,7 @@ class SearchViewModel(
         }
         producerSuggestionJob = viewModelScope.launch {
             if (queryDebounceMs > 0L) delay(200L)
-            when (val res = vnRepository.searchProducers(query.trim(), pageSize = 15)) {
+            when (val res = vnRepository.searchProducers(query.trim(), maxResults = 15)) {
                 is AppResult.Success -> _uiState.update { it.copy(producerSuggestions = res.data) }
                 is AppResult.Failure -> _uiState.update { it.copy(producerSuggestions = emptyList()) }
             }

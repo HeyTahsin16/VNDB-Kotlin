@@ -137,7 +137,7 @@ class CharacterSearchViewModel(
             when (val result = vnRepository.searchCharacters(
                 filters = snapshot.filters,
                 page = page,
-                pageSize = PAGE_SIZE
+                maxResults = PAGE_SIZE
             )) {
                 is AppResult.Success -> {
                     val paginated = result.data
@@ -178,7 +178,7 @@ class CharacterSearchViewModel(
         }
         traitSuggestionJob = viewModelScope.launch {
             if (filterDebounceMs > 0L) delay(200L)
-            when (val res = vnRepository.searchTraits(query.trim(), pageSize = 15)) {
+            when (val res = vnRepository.searchTraits(query.trim(), maxResults = 15)) {
                 is AppResult.Success -> _uiState.update { it.copy(traitSuggestions = res.data) }
                 is AppResult.Failure -> _uiState.update { it.copy(traitSuggestions = emptyList()) }
             }

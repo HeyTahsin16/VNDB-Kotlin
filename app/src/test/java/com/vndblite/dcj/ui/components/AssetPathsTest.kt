@@ -6,9 +6,9 @@ import com.vndblite.dcj.domain.model.Language
 import com.vndblite.dcj.domain.model.Platform
 import com.vndblite.dcj.domain.model.ThemeId
 import java.io.File
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.Test
 
 class AssetPathsTest {
 

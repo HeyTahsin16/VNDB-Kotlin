@@ -7,6 +7,7 @@ object AppInfo {
     const val APP_LICENSE: String = "Apache-2.0"
     const val GITHUB_REPO_SLUG: String = "HeyTahsin16/VNDB-Kotlin"
     const val GITHUB_REPO_URL: String = "https://github.com/HeyTahsin16/VNDB-Kotlin"
+    const val SOURCE_REPOSITORY_URL: String = GITHUB_REPO_URL
     const val GITHUB_ISSUES_URL: String = "https://github.com/HeyTahsin16/VNDB-Kotlin/issues"
     const val UPSTREAM_FLUTTER_REPO_SLUG: String = "Daniel-C-J/vndb-lite"
     const val UPSTREAM_FLUTTER_REPO_URL: String = "https://github.com/Daniel-C-J/vndb-lite"

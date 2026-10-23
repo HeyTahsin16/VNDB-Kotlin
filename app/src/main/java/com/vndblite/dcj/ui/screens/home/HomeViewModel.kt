@@ -90,7 +90,8 @@ class HomeViewModel(
     private fun observeRemoteSections() {
         remoteSections.forEach { section ->
             viewModelScope.launch {
-                vnRepository.observeHomeSection(section).collect { cachedItems ->
+                vnRepository.observeHomeSection(section).collect { snapshot ->
+                    val cachedItems = snapshot.items
                     _uiState.update { state ->
                         val existing = state.sections[section] ?: HomeSectionState(section)
                         state.copy(
@@ -141,7 +142,7 @@ class HomeViewModel(
             val pageSize = _uiState.value.settings.maxPreviewItem.coerceIn(5, 50)
             val sectionJobs = remoteSections.map { section ->
                 launch {
-                    val result = vnRepository.refreshHomeSection(section, pageSize = pageSize, force = force)
+                    val result = vnRepository.refreshHomeSection(section, maxItems = pageSize, force = force)
                     _uiState.update { state ->
                         val cur = state.sections[section] ?: HomeSectionState(section)
                         val err = (result as? AppResult.Failure)?.error
@@ -155,7 +156,7 @@ class HomeViewModel(
             }
             val quotesJob = launch {
                 if (force || _uiState.value.quotes.isEmpty()) {
-                    val res = vnRepository.refreshQuotes(count = 4)
+                    val res = vnRepository.refreshQuotes(maxResults = 4)
                     _uiState.update {
                         it.copy(
                             isQuotesLoading = false,
@@ -167,7 +168,7 @@ class HomeViewModel(
                 }
             }
             val statsJob = launch {
-                val res = vnRepository.refreshSiteStats(force = force)
+                val res = vnRepository.refreshSiteStats()
                 _uiState.update {
                     it.copy(
                         isStatsLoading = false,
@@ -193,7 +194,7 @@ class HomeViewModel(
                 )
             }
             val pageSize = _uiState.value.settings.maxPreviewItem.coerceIn(5, 50)
-            val result = vnRepository.refreshHomeSection(section, pageSize = pageSize, force = force)
+            val result = vnRepository.refreshHomeSection(section, maxItems = pageSize, force = force)
             _uiState.update { state ->
                 val cur = state.sections[section] ?: HomeSectionState(section)
                 state.copy(
@@ -211,7 +212,7 @@ class HomeViewModel(
     private fun refreshQuotes() {
         viewModelScope.launch {
             _uiState.update { it.copy(isQuotesLoading = true, quotesError = null) }
-            val result = vnRepository.refreshQuotes(count = 4)
+            val result = vnRepository.refreshQuotes(maxResults = 4)
             _uiState.update {
                 it.copy(
                     isQuotesLoading = false,
@@ -224,7 +225,7 @@ class HomeViewModel(
     private fun refreshStats(force: Boolean) {
         viewModelScope.launch {
             _uiState.update { it.copy(isStatsLoading = true, statsError = null) }
-            val result = vnRepository.refreshSiteStats(force = force)
+            val result = if (force) vnRepository.refreshSiteStats() else vnRepository.refreshSiteStats()
             _uiState.update {
                 it.copy(
                     isStatsLoading = false,
