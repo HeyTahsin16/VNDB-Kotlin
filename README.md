@@ -18,7 +18,7 @@
 
 ## Overview
 
-**VNDB Kotlin** is a native Android application for browsing, discovering, and managing visual novels from [vndb.org](https://vndb.org). Inspired by [**vndb-lite**](https://github.com/Daniel-C-J/vndb-lite) by Daniel C.J. (the original Flutter application from which the visual novel theme artwork, status/platform/flag icons, and layout concepts were carried over), this project re-implements the client in **Kotlin** and **Jetpack Compose** and adds a **Character & Trait Explorer**, **Memorable Quotes**, and **Community Reviews**.
+**VNDB Lite-Kotlin** is a native Android application for browsing, discovering, and managing visual novels from [vndb.org](https://vndb.org). Inspired by [**vndb-lite**](https://github.com/Daniel-C-J/vndb-lite) by Daniel C.J. (the original Flutter application from which the visual novel theme artwork, status/platform/flag icons, and layout concepts were carried over), this project re-implements the client in **Kotlin** and **Jetpack Compose** and adds a **Character & Trait Explorer**, **Memorable Quotes**, and **Community Reviews**.
 
 ---
 
