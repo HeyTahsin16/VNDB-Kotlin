@@ -22,18 +22,6 @@
 
 ---
 
-## Screenshots
-
-> **Placeholder (`docs/screenshots/`)**: Screenshots are being captured for the Kotlin & Jetpack Compose UI. See [`docs/screenshots/README.md`](docs/screenshots/README.md) for the list of 8 target screens (`<= 250 KB` WebP each).
-
-<!--
-| Home & Previews | VN Search & Filters | Character & Trait Explorer | VN Detail & Reviews |
-| :---: | :---: | :---: | :---: |
-| ![Home](docs/screenshots/01-home.webp) | ![VN Search](docs/screenshots/02-vn-search-filters.webp) | ![Characters](docs/screenshots/03-character-trait-explorer.webp) | ![Reviews](docs/screenshots/05-vn-detail-reviews.webp) |
--->
-
----
-
 ## Features
 
 ### 1. Visual Novel Discovery & Home Dashboard
